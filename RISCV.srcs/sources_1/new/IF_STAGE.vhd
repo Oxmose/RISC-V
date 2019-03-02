@@ -14,6 +14,8 @@
 --              IN: 1 bit, CLK the system clock.
 --              IN: 1 bit, RST asynchronous reset.
 --              IN: 1 bit, STALL asynchronous stall signal.
+--              IN: 1 bit, EF_JUMP effective jump when 1
+--              IN: 64 bits, JUMP_INST_ADDR the jump address.
 --              IN: 64 bits, INST_MEM_DATA the data from the instruction memory.
 --              OUT: 64 bits, INST_MEM_ADDR the address to fetch the data from.
 --
@@ -30,56 +32,53 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity IF_STAGE is
-    Port ( CLK : in STD_LOGIC;
-           RST : in STD_LOGIC;
-           STALL : in STD_LOGIC;
-           INST_MEM_DATA : in STD_LOGIC_VECTOR (63 downto 0);
-           INST_MEM_ADDR : out STD_LOGIC_VECTOR (63 downto 0));
+entity IF_STAGE is 
+    Port ( CLK :            in STD_LOGIC;
+           RST :            in STD_LOGIC;
+           STALL :          in STD_LOGIC;
+           EF_JUMP:         in STD_LOGIC;
+           JUMP_INST_ADDR : in STD_LOGIC_VECTOR (63 downto 0);
+           INST_MEM_DATA :  in STD_LOGIC_VECTOR (63 downto 0);
+           PC :             out STD_LOGIC_VECTOR (63 downto 0);
+           SIG_ALIGN:       out STD_LOGIC);
 end IF_STAGE;
 
 architecture IF_STAGE_BEHAVE of IF_STAGE is
 
--- Program counter register
-component REGISTER_64B
-    Port ( CLK : in STD_LOGIC;
-           RST : in STD_LOGIC;
-           EN :  in STD_LOGIC;
-           D :   in STD_LOGIC_VECTOR (63 downto 0);
-           Q :   out STD_LOGIC_VECTOR (63 downto 0));
-end component;
-
 -- Signals
-signal PC_WRITE:  STD_LOGIC := '0';
-signal NEXT_INST_ADDR: STD_LOGIC_VECTOR(63 downto 0);
 signal CURR_INST_ADDR: STD_LOGIC_VECTOR(63 downto 0);
+signal MASK_INST_ADDR: STD_LOGIC_VECTOR(63 downto 0);
 
 -- Constants
 constant INSTRUCTION_WIDTH: integer := 4;
+constant INSTRUCTION_ALIGN: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000003";
 
 begin
-
-    -- Program counter register mapping 
-    U1: REGISTER_64B Port Map (
-        CLK => CLK,
-        RST => RST,
-        EN  => PC_WRITE,
-        D   => NEXT_INST_ADDR,
-        Q   => CURR_INST_ADDR
-    );
 
     -- PC Incrementer process 
     PC_INCREMENT: process(RST, CLK)
     begin 
         if(RST = '1') then
-            PC_WRITE <= '1';
-            NEXT_INST_ADDR <= (others => '0');
-        elsif(rising_edge(CLK) AND STALL = '0') then
-            PC_WRITE <= '1';
-            NEXT_INST_ADDR <= STD_LOGIC_VECTOR(UNSIGNED(NEXT_INST_ADDR) + INSTRUCTION_WIDTH);
-        else
-            PC_WRITE <= '1';
+            CURR_INST_ADDR <= (others => '0');
+        elsif(rising_edge(CLK) AND STALL = '0') then                        
+            -- PC Selector
+            if(EF_JUMP = '1') then
+                -- NOP the next operation and set jump instruction address
+                CURR_INST_ADDR <= JUMP_INST_ADDR;
+            else
+                -- Increment instruction pointer
+                CURR_INST_ADDR <= STD_LOGIC_VECTOR(UNSIGNED(CURR_INST_ADDR) + INSTRUCTION_WIDTH);
+            end if;
         end if;
     end process PC_INCREMENT;
-
+            
+    -- Async alignement exception signal      
+    MASK_INST_ADDR <= CURR_INST_ADDR AND INSTRUCTION_ALIGN;
+    with MASK_INST_ADDR select SIG_ALIGN <=
+        '0' when X"0000000000000000",
+        '1' when others;
+        
+    -- Link PC and CURR_INST_ADDR
+    PC <= CURR_INST_ADDR;
+  
 end IF_STAGE_BEHAVE;
