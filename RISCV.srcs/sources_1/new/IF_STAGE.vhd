@@ -17,7 +17,9 @@
 --              IN: 1 bit, EF_JUMP effective jump when 1
 --              IN: 64 bits, JUMP_INST_ADDR the jump address.
 --              IN: 64 bits, INST_MEM_DATA the data from the instruction memory.
---              OUT: 64 bits, INST_MEM_ADDR the address to fetch the data from.
+--              OUT: 64 bits, PC the address to fetch the data from.
+--              OUT: 64 bits, INSTRUCTION the fetched instruction.
+--              OUT   1 bit, SIG_ALIGN alignement exception signal.
 --
 -- Dependencies: None.
 -- 
@@ -40,6 +42,7 @@ entity IF_STAGE is
            JUMP_INST_ADDR : in STD_LOGIC_VECTOR (63 downto 0);
            INST_MEM_DATA :  in STD_LOGIC_VECTOR (63 downto 0);
            PC :             out STD_LOGIC_VECTOR (63 downto 0);
+           INSTRUCTION :    out STD_LOGIC_VECTOR (63 downto 0);
            SIG_ALIGN:       out STD_LOGIC);
 end IF_STAGE;
 
@@ -63,7 +66,7 @@ begin
         elsif(rising_edge(CLK) AND STALL = '0') then                        
             -- PC Selector
             if(EF_JUMP = '1') then
-                -- NOP the next operation and set jump instruction address
+                -- Jump instruction address
                 CURR_INST_ADDR <= JUMP_INST_ADDR;
             else
                 -- Increment instruction pointer
@@ -80,5 +83,8 @@ begin
         
     -- Link PC and CURR_INST_ADDR
     PC <= CURR_INST_ADDR;
+    
+    -- Link instruction with memory output 
+    INSTRUCTION <= INST_MEM_DATA;
   
 end IF_STAGE_BEHAVE;
