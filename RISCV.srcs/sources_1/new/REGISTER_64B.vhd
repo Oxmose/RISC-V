@@ -37,7 +37,7 @@ end REGISTER_64B;
 architecture REGISTER_64B_BEHAVIOR of REGISTER_64B is
 begin
 
-    process(RST, CLK)
+    process(RST, CLK, EN)
     begin
         -- On RST, set Q to 0
         if(RST = '1') then
