@@ -10,11 +10,19 @@
 -- Description: Instruction Decode stage of the RISCV processor.
 --              This stage decodes the instruction.The instruction is split in different
 --              parts that are used in the next stages.
---              IN: 1 bit, CLK the system clock.
---              IN: 1 bit, RST asynchronous reset.
---              IN: 1 bit, STALL asynchronous stall signal.
 --              IN: 64 bits, INSTRUCTION_DATA the data to decode.
---              IN: 64 bits, PC the current program counter.
+--              OUT: 64 bits, OPCODE the current intruction's opcode.
+--              OUT: 5 bits, RD the destination tion register
+--              OUT: 5 bits, RS1 the first source register.
+--              OUT: 5 bits, RS2 the second source register.
+--              OUT: 3 bits, FUNCT3 the funct3 operand.
+--              OUT: 7 bits, FUNCT7 the funct7 operand.
+--              OUT: 32 bits, IMM_I the I format immediate.
+--              OUT: 32 bits, IMM_S the S format immediate.
+--              OUT: 32 bits, IMM_B the B format immediate.
+--              OUT: 32 bits, IMM_U the U format immediate.
+--              OUT: 32 bits, IMM_J the J format immediate.
+--              OUT: 1 bit, SIG_INVALID the instruction invalid exception signal.
 --
 -- Dependencies: None.
 -- 
@@ -30,11 +38,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity ID_STAGE is 
-    Port ( CLK :              in STD_LOGIC;
-           RST :              in STD_LOGIC;
-           STALL :            in STD_LOGIC;
-           INSTRUCTION_DATA : in STD_LOGIC_VECTOR (63 downto 0);
-           PC :               out STD_LOGIC_VECTOR (63 downto 0);
+    Port ( INSTRUCTION_DATA : in STD_LOGIC_VECTOR (63 downto 0);
            OPCODE :           out STD_LOGIC_VECTOR(6 downto 0);
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
            RS1 :              out STD_LOGIC_VECTOR(4 downto 0);
@@ -58,7 +62,6 @@ architecture ID_STAGE_FLOW of ID_STAGE is
 -- Constants
 
 begin
-
     -- As defined by RISC-V RV64I, opcode is defined by the 7 first bits
     OPCODE <= INSTRUCTION_DATA(6 downto 0);
     
@@ -78,7 +81,7 @@ begin
     FUNCT7 <= INSTRUCTION_DATA(31 downto 25);
     
     -- I Immediate
-    IMM_I(10 downto 0)  <= INSTRUCTION_DATA(31 downto 20);
+    IMM_I(10 downto 0)  <= INSTRUCTION_DATA(30 downto 20);
     IMM_I(31 downto 11) <= (others => INSTRUCTION_DATA(31));
     
     -- S Immediate
@@ -98,7 +101,7 @@ begin
     IMM_U(31 downto 12) <= INSTRUCTION_DATA(31 downto 12);
     
     -- J Immediate
-    IMM_J(0) <= '0';
+    IMM_J(0)            <= '0';
     IMM_J(10 downto 1)  <= INSTRUCTION_DATA(30 downto 21);
     IMM_J(11)           <= INSTRUCTION_DATA(20);
     IMM_J(19 downto 12) <= INSTRUCTION_DATA(19 downto 12);
