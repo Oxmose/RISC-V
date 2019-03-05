@@ -12,9 +12,12 @@
 --              IN: 1 bit, RST asynchronous reset.
 --              IN: 1 bit, STALL asynchronous stall signal.
 --              IN: 1 bit, WRITE set to 1 for write operation or 0 for read operation.
---              IN: 5 bits, RID the index of the register to access.
+--              IN: 5 bits, RRID1 the index of the register 1 to access.
+--              IN: 5 bits, RRID2 the index of the register 2 to access.
+--              IN: 5 bits, WRID the index of the register to write to.
 --              IN: 64 bits, RWVAL the value to write to the register, ignored when read operation.
---              OUT: 64 bits, RRVAL the value of the accessed register, undefined on write operation.
+--              OUT: 64 bits, RRVAL1 the value of the accessed register 1.
+--              OUT: 64 bits, RRVAL2 the value of the accessed register 2.
 --
 -- Dependencies: REGISTER_64B.
 -- 
@@ -34,9 +37,14 @@ entity REG_BANK is
            RST :   in STD_LOGIC;
            STALL : in STD_LOGIC;
            WRITE:  in STD_LOGIC;
-           RID :   in STD_LOGIC_VECTOR (4 downto 0);           
+           RRID1 : in STD_LOGIC_VECTOR (4 downto 0);  
+           RRID2 : in STD_LOGIC_VECTOR (4 downto 0);  
+           WRID :  in STD_LOGIC_VECTOR (4 downto 0);  
            RWVAL : in STD_LOGIC_VECTOR (63 downto 0);
-           RRVAL : OUT STD_LOGIC_VECTOR (63 downto 0));
+           RRVAL1 : OUT STD_LOGIC_VECTOR (63 downto 0);
+           RRVAL2 : OUT STD_LOGIC_VECTOR (63 downto 0));
+           
+           
 end REG_BANK;
 
 architecture REG_BANK_FLOW of REG_BANK is
@@ -309,18 +317,52 @@ begin
     );
     
     -- Write selector
-    WR_SEL: process(RST, RID)
+    WR_SEL: process(RST, WRID)
     begin
         if(RST = '1') then 
             WRITE_ID <= (others => '0');
         else
             WRITE_ID <= (others => '0');
-            WRITE_ID(TO_INTEGER(UNSIGNED(RID))) <= WRITE AND NOT STALL; 
+            WRITE_ID(TO_INTEGER(UNSIGNED(WRID))) <= WRITE AND NOT STALL; 
         end if;
     end process WR_SEL;
     
     -- Read selector
-    WITH RID SELECT RRVAL <=
+    WITH RRID1 SELECT RRVAL1 <=
+        READ_01 WHEN "00001",
+        READ_02 WHEN "00010",
+        READ_03 WHEN "00011",
+        READ_04 WHEN "00100",
+        READ_05 WHEN "00101",
+        READ_06 WHEN "00110",
+        READ_07 WHEN "00111",
+        READ_08 WHEN "01000",
+        READ_09 WHEN "01001",
+        READ_10 WHEN "01010",
+        READ_11 WHEN "01011",
+        READ_12 WHEN "01100",
+        READ_13 WHEN "01101",
+        READ_14 WHEN "01110",
+        READ_15 WHEN "01111",
+        READ_16 WHEN "10000",
+        READ_17 WHEN "10001",
+        READ_18 WHEN "10010",
+        READ_19 WHEN "10011",
+        READ_20 WHEN "10100",
+        READ_21 WHEN "10101",
+        READ_22 WHEN "10110",
+        READ_23 WHEN "10111",
+        READ_24 WHEN "11000",
+        READ_25 WHEN "11001",
+        READ_26 WHEN "11010",
+        READ_27 WHEN "11011",
+        READ_28 WHEN "11100",
+        READ_29 WHEN "11101",
+        READ_30 WHEN "11110",
+        READ_31 WHEN "11111",
+        X"0000000000000000" WHEN OTHERS;
+        
+    WITH RRID2 SELECT RRVAL2 <=
         READ_01 WHEN "00001",
         READ_02 WHEN "00010",
         READ_03 WHEN "00011",
