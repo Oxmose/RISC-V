@@ -178,7 +178,7 @@ begin
             elsif(COUNTER < 7) then                
                 OP1_D <= X"AAAAAAAAAAAAAAAA";
                 OP2_D <= X"55555555FFFFFFFF";
-                SEL_D <= "000100";
+                SEL_D <= "000111";
                 wait for CLK_PERIOD / 3;
                 assert(VOUT_D = X"00000000AAAAAAAA")
                 report("ERROR: AND value incorect");
@@ -186,7 +186,7 @@ begin
                 wait for CLK_PERIOD / 3;
                 assert(VOUT_D = X"FFFFFFFFFFFFFFFF")
                 report("ERROR: OR value incorect");
-                SEL_D <= "000110";
+                SEL_D <= "000100";
                 wait for CLK_PERIOD / 3;
                 assert(VOUT_D = X"FFFFFFFF55555555")
                 report("ERROR: XOR value incorect");       

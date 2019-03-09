@@ -58,11 +58,11 @@ begin
         -- SLTU
         X"000000000000000" & "000" & SLTIU_RES WHEN "000011",
         -- AND
-        OP1 AND OP2 WHEN "000100",
+        OP1 AND OP2 WHEN "000111",
         -- OR
-        OP1 OR OP2 WHEN "000101",
+        OP1 OR OP2 WHEN "000110",
         -- XOR
-        OP1 XOR OP2 WHEN "000110",
+        OP1 XOR OP2 WHEN "000100",
         -- SLL
         STD_LOGIC_VECTOR(SHIFT_LEFT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "000111",
         -- SRL
