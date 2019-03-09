@@ -77,9 +77,9 @@ begin
             
     -- Async alignement exception signal      
     MASK_INST_ADDR <= CURR_INST_ADDR AND INSTRUCTION_ALIGN;
-    with MASK_INST_ADDR select SIG_ALIGN <=
-        '0' when X"0000000000000000",
-        '1' when others;
+    WITH MASK_INST_ADDR SELECT SIG_ALIGN <=
+        '0' WHEN X"0000000000000000",
+        '1' WHEN OTHERS;
         
     -- Link PC and CURR_INST_ADDR
     PC <= CURR_INST_ADDR;

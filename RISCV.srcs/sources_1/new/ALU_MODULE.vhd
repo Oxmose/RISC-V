@@ -27,10 +27,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity ALU_MODULE is 
-    Port ( OP1 :      in STD_LOGIC_VECTOR(64 downto 0);
-           OP2 :      in STD_LOGIC_VECTOR(64 downto 0);
-           SEL :      in STD_LOGIC_VECTOR(10 downto 0);
-           VOUT :     out STD_LOGIC_VECTOR(64 downto 0)
+    Port ( OP1 :      in STD_LOGIC_VECTOR(63 downto 0);
+           OP2 :      in STD_LOGIC_VECTOR(63 downto 0);
+           SEL :      in STD_LOGIC_VECTOR(5 downto 0);
+           VOUT :     out STD_LOGIC_VECTOR(63 downto 0)
     );
           
 end ALU_MODULE;
@@ -49,28 +49,28 @@ begin
     SLTIU_RES <= '1' WHEN UNSIGNED(OP1) < UNSIGNED(OP2) ELSE '0';
 
     WITH SEL SELECT VOUT <= 
-    -- ADD
-    STD_LOGIC_VECTOR(UNSIGNED(OP1) + UNSIGNED(OP2)) WHEN "0000000000",
-    -- SUB
-    STD_LOGIC_VECTOR(UNSIGNED(OP1) - UNSIGNED(OP2)) WHEN "0000000001",
-    -- SLT
-    X"000000000000000" & "000" & SLTI_RES WHEN "0000000010",
-    -- SLTU
-    X"000000000000000" & "000" & SLTIU_RES WHEN "0000000011",
-    -- AND
-    OP1 AND OP2 WHEN "0000000100",
-    -- OR
-    OP1 OR OP2 WHEN "0000000101",
-    -- XOR
-    OP1 XOR OP2 WHEN "0000000110",
-    -- SLL
-    STD_LOGIC_VECTOR(SHIFT_LEFT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "0000000111",
-    -- SRL
-    STD_LOGIC_VECTOR(SHIFT_RIGHT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "0000001000",
-    -- SRA
-    STD_LOGIC_VECTOR(SHIFT_RIGHT(SIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "0000001001",
-    -- UNKNOWN
-    (others => '1') WHEN OTHERS;
+        -- ADD
+        STD_LOGIC_VECTOR(UNSIGNED(OP1) + UNSIGNED(OP2)) WHEN "000000",
+        -- SUB
+        STD_LOGIC_VECTOR(UNSIGNED(OP1) - UNSIGNED(OP2)) WHEN "000001",
+        -- SLT
+        X"000000000000000" & "000" & SLTI_RES WHEN "000010",
+        -- SLTU
+        X"000000000000000" & "000" & SLTIU_RES WHEN "000011",
+        -- AND
+        OP1 AND OP2 WHEN "000100",
+        -- OR
+        OP1 OR OP2 WHEN "000101",
+        -- XOR
+        OP1 XOR OP2 WHEN "000110",
+        -- SLL
+        STD_LOGIC_VECTOR(SHIFT_LEFT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "000111",
+        -- SRL
+        STD_LOGIC_VECTOR(SHIFT_RIGHT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "001000",
+        -- SRA
+        STD_LOGIC_VECTOR(SHIFT_RIGHT(SIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "001001",
+        -- UNKNOWN
+        (others => '1') WHEN OTHERS;
     
     -- Operation selector
     
