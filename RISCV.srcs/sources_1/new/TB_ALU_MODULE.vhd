@@ -299,43 +299,8 @@ begin
                 SEL_D <= "001000";
                 wait for CLK_PERIOD / 66;
                 assert(VOUT_D = X"FFFFFFFFFFFFFFFF")
-                report("ERROR: SRA value incorect 4");     
-            ------------------- TEST EQ --------------------------
-            elsif(COUNTER < 11) then                
-                OP1_D <= X"FFFFFFFF00000000";
-                OP2_D <= X"00000000FFFFFFFF";
-                SEL_D <= "001010";
-                wait for CLK_PERIOD / 5;
-                assert(VOUT_D = X"0000000000000000")
-                report("ERROR: EQ value incorect");
-                
-                OP1_D <= X"00000000FFFFFFFF";
-                OP2_D <= X"FFFFFFFF00000000";
-                SEL_D <= "001010";
-                wait for CLK_PERIOD / 5;
-                assert(VOUT_D = X"0000000000000000")
-                report("ERROR: EQ value incorect");
-                
-                OP1_D <= X"00000000FFFFFFFF";
-                OP2_D <= X"00000000FFFFFFFF";
-                SEL_D <= "001010";
-                wait for CLK_PERIOD / 5;
-                assert(VOUT_D = X"0000000000000001")
-                report("ERROR: EQ value incorect");
-                
-                OP1_D <= X"FFFFFFFF00000000";
-                OP2_D <= X"FFFFFFFF00000000";
-                SEL_D <= "001010";
-                wait for CLK_PERIOD / 5;
-                assert(VOUT_D = X"0000000000000001")
-                report("ERROR: EQ value incorect");
-                
-                OP1_D <= X"0000000000000012";
-                OP2_D <= X"0000000000000112";
-                SEL_D <= "001010";
-                wait for CLK_PERIOD / 5;
-                assert(VOUT_D = X"0000000000000000")
-                report("ERROR: EQ value incorect");         
+                report("ERROR: SRA value incorect 4");    
+           
             elsif (NOTIFY = '0') then
                 NOTIFY <= '1';
                 report "Test finished" severity note;   
