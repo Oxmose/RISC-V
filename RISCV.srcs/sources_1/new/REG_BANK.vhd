@@ -33,14 +33,14 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity REG_BANK is 
-    Port ( CLK :   in STD_LOGIC;
-           RST :   in STD_LOGIC;
-           STALL : in STD_LOGIC;
-           WRITE:  in STD_LOGIC;
-           RRID1 : in STD_LOGIC_VECTOR (4 downto 0);  
-           RRID2 : in STD_LOGIC_VECTOR (4 downto 0);  
-           WRID :  in STD_LOGIC_VECTOR (4 downto 0);  
-           RWVAL : in STD_LOGIC_VECTOR (63 downto 0);
+    Port ( CLK :    in STD_LOGIC;
+           RST :    in STD_LOGIC;
+           STALL :  in STD_LOGIC;
+           WRITE:   in STD_LOGIC;
+           RRID1 :  in STD_LOGIC_VECTOR (4 downto 0);  
+           RRID2 :  in STD_LOGIC_VECTOR (4 downto 0);  
+           WRID :   in STD_LOGIC_VECTOR (4 downto 0);  
+           RWVAL :  in STD_LOGIC_VECTOR (63 downto 0);
            RRVAL1 : OUT STD_LOGIC_VECTOR (63 downto 0);
            RRVAL2 : OUT STD_LOGIC_VECTOR (63 downto 0));          
 end REG_BANK;
