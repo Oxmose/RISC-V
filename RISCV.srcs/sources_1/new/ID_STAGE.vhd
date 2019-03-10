@@ -38,16 +38,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity ID_STAGE is 
-    Port ( INSTRUCTION_DATA : in STD_LOGIC_VECTOR (63 downto 0); 
-             
+    Port ( INSTRUCTION_DATA : in STD_LOGIC_VECTOR(63 downto 0); 
+           PC :               in STD_LOGIC_VECTOR(63 downto 0);
+           
            REG_RVAL1 :        in STD_LOGIC_VECTOR(63 downto 0);
            REG_RVAL2 :        in STD_LOGIC_VECTOR(63 downto 0);
            
-           OPERAND_0:         out STD_LOGIC_VECTOR(63 downto 0);    
-           OPERAND_1:         out STD_LOGIC_VECTOR(63 downto 0);
+           OPERAND_0 :        out STD_LOGIC_VECTOR(63 downto 0);    
+           OPERAND_1 :        out STD_LOGIC_VECTOR(63 downto 0);
+           OPERAND_OFF :      out STD_LOGIC_VECTOR(63 downto 0);
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
            ALU_OP :           out STD_LOGIC_VECTOR(5 downto 0);
-           OP_TYPE :          out STD_LOGIC_VECTOR(5 downto 0);
+           BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
+           OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
            
            REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
            REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
@@ -134,12 +137,15 @@ begin
      IMM_J(63 downto 20) <= (others => INSTRUCTION_DATA(31));
                
     -- Manage OPCODE
-    DECODE_PROCESS: process(INSTRUCTION_DATA, OPCODE, RS1, RS2, FUNCT3, FUNCT7, IMM_I, IMM_S, IMM_B, IMM_U, IMM_J)
+    DECODE_PROCESS: process(INSTRUCTION_DATA, OPCODE, PC,
+                            RS1, REG_RVAL1, RS2, REG_RVAL2, 
+                            FUNCT3, FUNCT7, 
+                            IMM_I, IMM_S, IMM_B, IMM_U, IMM_J)
     begin 
         
         if(OPCODE = "0010011") then                                -- OP-IMM
             -- Set OP Type as ALU type 
-            OP_TYPE <= "000000";
+            OP_TYPE <= "0000";
         
             -- Select RS1 value as first operand
             REG_RID1  <= RS1;
@@ -155,9 +161,10 @@ begin
             if(FUNCT3 = "101" AND IMM_I(10) = '1') then
                 ALU_OP <= "001000";                
             end if;
+            
         elsif(OPCODE = "0110011") then                             -- OP
             -- Set OP Type as ALU type 
-            OP_TYPE <= "000000";
+            OP_TYPE <= "0000";
         
             -- Select RS1 value as first operand
             REG_RID1  <= RS1;
@@ -179,18 +186,65 @@ begin
             if(FUNCT3 = "101" AND IMM_I(10) = '1') then
                 ALU_OP <= "001000";                
             end if;
+            
         elsif(OPCODE = "0110111") then                             -- LUI 
             -- Set OP Type as LUI type 
-            OP_TYPE <= "000001";
+            OP_TYPE <= "0001";
             
             -- Select IMM as first operand
             OPERAND_0 <= IMM_U;
+            
         elsif(OPCODE = "0010111") then                             -- AUIPC
-            -- Set OP Type as AUIPC type 
-            OP_TYPE <= "000010";
+            -- Set OP Type as branch type 
+            OP_TYPE <= "0010";
             
-            -- Select IMM as first operand
+            -- Select the BRANCH operation (AUIPC)
+            BRANCH_OP <= "1000";
+                       
+            -- Select IMM as second operand
             OPERAND_0 <= IMM_U;
+        
+        elsif(OPCODE = "1101111") then                             -- JAL
+            -- Set OP Type as branch type 
+            OP_TYPE <= "0010";
+            
+            -- Select the BRANCH operation (JAL)
+            BRANCH_OP <= "1001";
+            
+            -- Select IMM as second operand
+            OPERAND_0 <= IMM_U;
+            
+        elsif(OPCODE = "1100111") then                             -- JALR
+            -- Set OP Type as branch type 
+            OP_TYPE <= "0010";
+            
+            -- Select the BRANCH operation (JALR)
+            BRANCH_OP <= "1010";
+            
+            -- Select RS1 value as first operand
+            REG_RID1  <= RS1;
+            OPERAND_0 <= REG_RVAL1;
+            
+            -- Select IMM as second operand
+            OPERAND_1 <= IMM_I;
+        
+        elsif(OPCODE = "1100111") then                             -- BRANCH
+            -- Set OP Type as branch type 
+            OP_TYPE <= "0010";
+            
+            -- Select the BRANCH operation
+            BRANCH_OP <= '0' & FUNCT3;
+            
+            -- Select RS1 value as first operand
+            REG_RID1  <= RS1;
+            OPERAND_0 <= REG_RVAL1;
+            
+            -- Select RS2 value as second operand
+            REG_RID1  <= RS2;
+            OPERAND_1 <= REG_RVAL2;
+            
+            -- Add the offset 
+            OPERAND_OFF <= IMM_B;
         end if;
     
     end process DECODE_PROCESS;
