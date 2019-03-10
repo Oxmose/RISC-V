@@ -13,6 +13,19 @@
 --              IN: 10 bits, SEL the operation selector.
 --              OUT: 64 bits, VOUT the output value.
 --
+-- The values of SEL determine the BRANCH operation:
+--     - 0000 BEQ
+--     - 0001 BNE
+--     - 0010 INVALID
+--     - 0011 INVALID
+--     - 0100 BLT
+--     - 0101 BGE
+--     - 0110 BLTU
+--     - 0111 BGEU
+--     - 1000 AUIPC
+--     - 1001 JAL
+--     - 1010 JALR
+--
 -- Dependencies: None.
 -- 
 -- Revision:
@@ -36,7 +49,8 @@ entity BRANCH_UNIT_MODULE is
            SEL :      in STD_LOGIC_VECTOR(3 downto 0);
            RD_OUT :   out STD_LOGIC_VECTOR(63 downto 0);
            PC_OUT :   out STD_LOGIC_VECTOR(63 downto 0);
-           B_TAKEN :  out STD_LOGIC
+           B_TAKEN :  out STD_LOGIC;
+           INVALID :  out STD_LOGIC
     );
 end BRANCH_UNIT_MODULE;
 
@@ -55,6 +69,7 @@ signal NEXT_PC :        STD_LOGIC_VECTOR(63 downto 0);
 
 -- Constants
 constant INSTRUCTION_WIDTH: integer := 4;
+constant MAX_OP :           unsigned(3 downto 0) := "1010";
 
 begin
     -- Get next isntruction 
@@ -68,7 +83,11 @@ begin
     BGE_RES  <= SHIFT_OFF_NEXT WHEN SIGNED(OP1) >= SIGNED(OP2)     ELSE PC_IN;
     BGEU_RES <= SHIFT_OFF_NEXT WHEN UNSIGNED(OP1) >= UNSIGNED(OP2) ELSE PC_IN;
     
+    -- Compute branch taken signal
     B_TAKEN <= '0' WHEN PC_IN = NEXT_PC ELSE '1';
+    
+    -- Compute invalid signal 
+    INVALID <= '1' WHEN SEL = "0010" OR SEL = "0011" OR UNSIGNED(SEL) > MAX_OP ELSE '0';
     
     -- NEXT_PC to PC_OUT
     PC_OUT <= NEXT_PC;
@@ -92,7 +111,7 @@ begin
        STD_LOGIC_VECTOR(UNSIGNED(OP1) + UNSIGNED(OFF)) AND X"FFFFFFFFFFFFFFFE" WHEN "1010",
        -- BEQ
        BEQ_RES WHEN "0000",
-       -- BNEQ
+       -- BNE
        BNE_RES WHEN "0001",
        -- BLT
        BLT_RES WHEN "0100",
