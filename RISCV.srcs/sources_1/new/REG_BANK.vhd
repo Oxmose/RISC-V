@@ -7,7 +7,7 @@
 -- Project Name: RISCV
 -- Target Devices: Digilent NEXYS4
 -- Tool Versions: Vivado 2018.2
--- Description: 64 bits registers bank.
+-- Description: 64 bits registers bank, allows two reads and one write in the same clock cycle.
 --              IN: 1 bit, CLK the system clock.
 --              IN: 1 bit, RST asynchronous reset.
 --              IN: 1 bit, STALL asynchronous stall signal.

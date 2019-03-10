@@ -10,8 +10,14 @@
 -- Description: Branch unit
 --              IN: 64 bits, OP1 the first operand.
 --              IN: 64 bits, OP2 the second operand.
---              IN: 10 bits, SEL the operation selector.
---              OUT: 64 bits, VOUT the output value.
+--              IN: 64 bits, OFF the offset to add to PC.
+--              IN: 64 bits, RD_IN the current value of RD.
+--              IN: 64 bits, PC_IN the current value of PC.
+--              IN: 4 bits, SEL the branch operation selector.
+--              OUT: 64 bits, RD_OUT the output for RD.
+--              OUT: 64 bits, PC_OUT the output for PC.
+--              OUT: 1 bit, B_TABKEN is set to 1 when the branch is taken, 0 otherwise.
+--              OUT: 1 bit, SIG_INVALID is set to 1 when the branch operation is invalid, 0 otherwise.
 --
 -- The values of SEL determine the BRANCH operation:
 --     - 0000 BEQ
@@ -41,16 +47,16 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity BRANCH_UNIT_MODULE is
-    Port ( OP1 :      in STD_LOGIC_VECTOR(63 downto 0);
-           OP2 :      in STD_LOGIC_VECTOR(63 downto 0);
-           OFF :      in STD_LOGIC_VECTOR(63 downto 0);
-           RD_IN :    in STD_LOGIC_VECTOR(63 downto 0);
-           PC_IN :    in STD_LOGIC_VECTOR(63 downto 0);
-           SEL :      in STD_LOGIC_VECTOR(3 downto 0);
-           RD_OUT :   out STD_LOGIC_VECTOR(63 downto 0);
-           PC_OUT :   out STD_LOGIC_VECTOR(63 downto 0);
-           B_TAKEN :  out STD_LOGIC;
-           INVALID :  out STD_LOGIC
+    Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
+           OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
+           OFF :         in STD_LOGIC_VECTOR(63 downto 0);
+           RD_IN :       in STD_LOGIC_VECTOR(63 downto 0);
+           PC_IN :       in STD_LOGIC_VECTOR(63 downto 0);
+           SEL :         in STD_LOGIC_VECTOR(3 downto 0);
+           RD_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
+           PC_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
+           B_TAKEN :     out STD_LOGIC;
+           SIG_INVALID : out STD_LOGIC
     );
 end BRANCH_UNIT_MODULE;
 
@@ -87,7 +93,7 @@ begin
     B_TAKEN <= '0' WHEN PC_IN = NEXT_PC ELSE '1';
     
     -- Compute invalid signal 
-    INVALID <= '1' WHEN SEL = "0010" OR SEL = "0011" OR UNSIGNED(SEL) > MAX_OP ELSE '0';
+    SIG_INVALID <= '1' WHEN SEL = "0010" OR SEL = "0011" OR UNSIGNED(SEL) > MAX_OP ELSE '0';
     
     -- NEXT_PC to PC_OUT
     PC_OUT <= NEXT_PC;

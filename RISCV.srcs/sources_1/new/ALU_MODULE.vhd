@@ -12,7 +12,7 @@
 --              IN: 64 bits, OP2 the second operand.
 --              IN: 4 bits, SEL the operation selector.
 --              OUT: 64 bits, VOUT the output value.
---              OUT: 1 bit, INVALID is set to 1 when an unknown operation is set in SEL.
+--              OUT: 1 bit, SIG_INVALID is set to 1 when an unknown operation is set in SEL.
 --
 -- The values of SEL determine the ALU operation:
 --     - 0000 Addition
@@ -40,11 +40,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity ALU_MODULE is 
-    Port ( OP1 :      in STD_LOGIC_VECTOR(63 downto 0);
-           OP2 :      in STD_LOGIC_VECTOR(63 downto 0);
-           SEL :      in STD_LOGIC_VECTOR(3 downto 0);
-           VOUT :     out STD_LOGIC_VECTOR(63 downto 0);
-           INVALID :  out STD_LOGIC
+    Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
+           OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
+           SEL :         in STD_LOGIC_VECTOR(3 downto 0);
+           VOUT :        out STD_LOGIC_VECTOR(63 downto 0);
+           SIG_INVALID : out STD_LOGIC
     ); 
 end ALU_MODULE;
 
@@ -64,7 +64,7 @@ begin
     SLTIU_RES <= '1' WHEN UNSIGNED(OP1) < UNSIGNED(OP2) ELSE '0';
     
     -- Invalid test
-    INVALID <= '1' WHEN UNSIGNED(SEL) > MAX_OP ELSE '0';
+    SIG_INVALID <= '1' WHEN UNSIGNED(SEL) > MAX_OP ELSE '0';
  
     -- Operation selector
     WITH SEL SELECT VOUT <= 

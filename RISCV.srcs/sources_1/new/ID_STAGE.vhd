@@ -11,17 +11,18 @@
 --              This stage decodes the instruction.The instruction is split in different
 --              parts that are used in the next stages.
 --              IN: 64 bits, INSTRUCTION_DATA the data to decode.
---              OUT: 64 bits, OPCODE the current intruction's opcode.
---              OUT: 5 bits, RD the destination tion register
---              OUT: 5 bits, RS1 the first source register.
---              OUT: 5 bits, RS2 the second source register.
---              OUT: 3 bits, FUNCT3 the funct3 operand.
---              OUT: 7 bits, FUNCT7 the funct7 operand.
---              OUT: 32 bits, IMM_I the I format immediate.
---              OUT: 32 bits, IMM_S the S format immediate.
---              OUT: 32 bits, IMM_B the B format immediate.
---              OUT: 32 bits, IMM_U the U format immediate.
---              OUT: 32 bits, IMM_J the J format immediate.
+--              IN: 64 bits, PC the current PC value.
+--              IN: 64 bits, REG_RVAL1 the value or the first register requested in the register file.
+--              IN: 64 bits, REG_RVAL2 the value or the second register requested in the register file.
+--              OUT: 64 bits, OPERAND_0 the value of the first operand of the instruction.
+--              OUT: 64 bits, OPERAND_1 the value of the second operand of the instruction.
+--              OUT: 64 bits, OPERAND_OFF the value of the offset operand of the instruction.
+--              OUT: 5 bits, RD the register id for RD. 
+--              OUT: 4 bits, ALU_OP the ALU operation to be executed.
+--              OUT: 4 bits, BRANCH_OP the BRANCH operation to be executed.
+--              OUT: 4 bits, OP_TYPE the operation type to be executed.
+--              OUT: 5 bits, REG_RID1 the register id for RS1. 
+--              OUT: 5 bits, REG_RID2 the register id for RS2. 
 --              OUT: 1 bit, SIG_INVALID the instruction invalid exception signal.
 --
 -- Dependencies: None.
