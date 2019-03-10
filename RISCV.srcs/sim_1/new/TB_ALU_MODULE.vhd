@@ -30,18 +30,20 @@ end TB_ALU_MODULE;
 architecture TB_ALU_MODULE_BEHAVE of TB_ALU_MODULE is
 
 component ALU_MODULE is 
-    Port ( OP1 :      in STD_LOGIC_VECTOR(63 downto 0);
-           OP2 :      in STD_LOGIC_VECTOR(63 downto 0);
-           SEL :      in STD_LOGIC_VECTOR(5 downto 0);
-           VOUT :     out STD_LOGIC_VECTOR(63 downto 0)
+    Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
+           OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
+           SEL :         in STD_LOGIC_VECTOR(3 downto 0);
+           VOUT :        out STD_LOGIC_VECTOR(63 downto 0);
+           SIG_INVALID : out STD_LOGIC
     );
 end component;
 
 signal OP1_D : STD_LOGIC_VECTOR(63 downto 0);
 signal OP2_D : STD_LOGIC_VECTOR(63 downto 0);
-signal SEL_D : STD_LOGIC_VECTOR(5 downto 0);
+signal SEL_D : STD_LOGIC_VECTOR(3 downto 0);
 signal VOUT_D : STD_LOGIC_VECTOR(63 downto 0);
 signal TEMP_SIG : STD_LOGIC_VECTOR(63 downto 0);
+signal SIG_INVALID_D : STD_LOGIC;
 
 signal NOTIFY: STD_LOGIC;
 signal COUNTER: INTEGER := 0;
@@ -54,7 +56,8 @@ begin
         OP1 => OP1_D,
         OP2 => OP2_D,
         SEL => SEL_D,
-        VOUT => VOUT_D
+        VOUT => VOUT_D,
+        SIG_INVALID => SIG_INVALID_D
     );
 
     TEST_CLK_DRIVE: process
@@ -71,10 +74,13 @@ begin
                 for i in 0 to 128 loop
                     OP1_D <= X"000000000000040D";
                     OP2_D <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP2_D'length));
-                    SEL_D <= "000000";
+                    SEL_D <= "0000";
                     wait for CLK_PERIOD / 256;
                     assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP2_D) + UNSIGNED(OP1_D)))
                     report("ERROR: ADD value incorect");
+                    
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: ADD -> Wrong SIGN_INVALID Value.");
                 end loop;
                 -- Overflow ADD
                 OP1_D <= X"FFFFFFFFFFFFFFF1";
@@ -82,10 +88,12 @@ begin
                 wait for CLK_PERIOD / 10000000;
                 for i in 0 to 128 loop                    
                     OP2_D <= STD_LOGIC_VECTOR(UNSIGNED(OP2_D) + 1);
-                    SEL_D <= "000000";
+                    SEL_D <= "0000";
                     wait for CLK_PERIOD / 256;
                     assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP2_D) + UNSIGNED(OP1_D)))
                     report("ERROR: ADD value incorect");
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: ADD -> Wrong SIGN_INVALID Value.");
                 end loop;
             ------------------- TEST SUBSTRACTION --------------------------
             elsif(COUNTER < 4) then                
@@ -93,10 +101,13 @@ begin
                 for i in 0 to 128 loop
                     OP1_D <= X"000000000000040D";
                     OP2_D <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP2_D'length));
-                    SEL_D <= "001001";
+                    SEL_D <= "1001";
                     wait for CLK_PERIOD / 256;
                     assert(VOUT_D = STD_LOGIC_VECTOR(SIGNED(OP1_D) - SIGNED(OP2_D)))
                     report("ERROR: SUB value incorect");
+                    
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: SUB -> Wrong SIGN_INVALID Value.");
                 end loop;
                 -- Overflow SUB
                 OP1_D <= X"0000000000000000";
@@ -104,90 +115,119 @@ begin
                 wait for CLK_PERIOD / 10000000;
                 for i in 0 to 128 loop                    
                     OP2_D <= STD_LOGIC_VECTOR(UNSIGNED(OP2_D) + 1);
-                    SEL_D <= "001001";
+                    SEL_D <= "1001";
                     wait for CLK_PERIOD / 256;
                     assert(VOUT_D = STD_LOGIC_VECTOR(SIGNED(OP1_D) - SIGNED(OP2_D)))
                     report("ERROR: SUB value incorect");
+                    
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: SUB -> Wrong SIGN_INVALID Value.");
                 end loop;
              ------------------- TEST SLT --------------------------
              elsif(COUNTER < 5) then                
                -- SLT
                 OP1_D <= X"000000000000040D";
                 OP2_D <= X"F000000000000000";
-                SEL_D <= "000010";
+                SEL_D <= "0010";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLT -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000000")
                 report("ERROR: SLT value incorect");
                 OP1_D <= X"000000000000040D";
                 OP2_D <= X"E000000000000000";
-                SEL_D <= "000010";
+                SEL_D <= "0010";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLT -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000000")
                 report("ERROR: SLT value incorect");
                 OP1_D <= X"EE0000000000040D";
                 OP2_D <= X"F000000000000000";
-                SEL_D <= "000010";
+                SEL_D <= "0010";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLT -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLT value incorect");
                 OP1_D <= X"F00000000000040D";
                 OP2_D <= X"7000000000000000";
-                SEL_D <= "000010";
+                SEL_D <= "0010";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLTD -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLT value incorect");
                 OP1_D <= X"0000000000000012";
                 OP2_D <= X"0000000000000112";
-                SEL_D <= "000010";
+                SEL_D <= "0010";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLT -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLT value incorect");      
             ------------------- TEST SLTU --------------------------
             elsif(COUNTER < 6) then                
                 OP1_D <= X"000000000000040D";
                 OP2_D <= X"F000000000000000";
-                SEL_D <= "000011";
+                SEL_D <= "0011";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLTU -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLTU value incorect");
                 OP1_D <= X"000000000000040D";
                 OP2_D <= X"E000000000000000";
-                SEL_D <= "000011";
+                SEL_D <= "0011";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLTU -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLTU value incorect");
                 OP1_D <= X"EE0000000000040D";
                 OP2_D <= X"F000000000000000";
-                SEL_D <= "000011";
+                SEL_D <= "0011";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLTU -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLTU value incorect");
                 OP1_D <= X"F00000000000040D";
                 OP2_D <= X"7000000000000000";
-                SEL_D <= "000011";
+                SEL_D <= "0011";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLTU -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000000")
                 report("ERROR: SLTU value incorect");
                 OP1_D <= X"0000000000000012";
                 OP2_D <= X"0000000000000112";
-                SEL_D <= "000011";
+                SEL_D <= "0011";
                 wait for CLK_PERIOD / 5;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLTU -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"0000000000000001")
                 report("ERROR: SLTU value incorect");   
             ------------------- TEST AND OR XOR --------------------------
             elsif(COUNTER < 7) then                
                 OP1_D <= X"AAAAAAAAAAAAAAAA";
                 OP2_D <= X"55555555FFFFFFFF";
-                SEL_D <= "000111";
+                SEL_D <= "0111";
                 wait for CLK_PERIOD / 3;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: AND -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"00000000AAAAAAAA")
                 report("ERROR: AND value incorect");
-                SEL_D <= "000110";
+                SEL_D <= "0110";
                 wait for CLK_PERIOD / 3;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: OR -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"FFFFFFFFFFFFFFFF")
                 report("ERROR: OR value incorect");
-                SEL_D <= "000100";
+                SEL_D <= "0100";
                 wait for CLK_PERIOD / 3;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: XOR -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"FFFFFFFF55555555")
                 report("ERROR: XOR value incorect");       
             ------------------- TEST SLL --------------------------
@@ -195,7 +235,7 @@ begin
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 TEMP_SIG <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"0000000000000001";
-                SEL_D <= "000001";
+                SEL_D <= "0001";
                 for i in 0 to 64 loop
                     if(i = 0) then
                         OP2_D <= X"0000000000000000"; 
@@ -203,6 +243,8 @@ begin
                         OP2_D <= X"0000000000000001";
                     end if;
                     wait for CLK_PERIOD / 130;
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: SLL -> Wrong SIGN_INVALID Value.");
                     assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(TEMP_SIG) sll i))
                     report("ERROR: SLL value incorect 0");
                     if(i /= 0) then
@@ -214,16 +256,20 @@ begin
                 end loop;
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "000001";
+                SEL_D <= "0001";
                 wait for CLK_PERIOD / 130;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLL -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) sll 63))
                 report("ERROR: SLL value incorect");
                 assert(VOUT_D(0) = '0')
                 report("ERROR: SLL value incorect");
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000000E";
-                SEL_D <= "000001";
+                SEL_D <= "0001";
                 wait for CLK_PERIOD / 130;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SLL -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) sll 14))
                 report("ERROR: SLL value incorect");
                 assert(VOUT_D(0) = '0')
@@ -233,7 +279,7 @@ begin
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"0000000000000001";
                 TEMP_SIG <= X"FFFFFFFFFFFFFFFF";
-                SEL_D <= "000101";
+                SEL_D <= "0101";
                 for i in 0 to 64 loop
                     if(i = 0) then
                         OP2_D <= X"0000000000000000"; 
@@ -241,6 +287,8 @@ begin
                         OP2_D <= X"0000000000000001";
                     end if;
                     wait for CLK_PERIOD / 130;
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: SRL -> Wrong SIGN_INVALID Value.");
                     assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(TEMP_SIG) srl i))
                     report("ERROR: SRL value incorect 0");
                     if(i /= 0) then
@@ -252,16 +300,20 @@ begin
                 end loop;
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "000101";
+                SEL_D <= "0101";
                 wait for CLK_PERIOD / 130;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SRL -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) srl 63))
                 report("ERROR: SRL value incorect");
                 assert(VOUT_D(63) = '0')
                 report("ERROR: SRL value incorect");
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000000E";
-                SEL_D <= "000101";
+                SEL_D <= "0101";
                 wait for CLK_PERIOD / 130;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SRL -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) srl 14))
                 report("ERROR: SRL value incorect");    
                 assert(VOUT_D(63) = '0')
@@ -271,7 +323,7 @@ begin
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"0000000000000001";
                 TEMP_SIG <= X"FFFFFFFFFFFFFFFF";
-                SEL_D <= "001000";
+                SEL_D <= "1000";
                 for i in 0 to 64 loop
                     if(i = 0) then
                         OP2_D <= X"0000000000000000"; 
@@ -279,6 +331,8 @@ begin
                         OP2_D <= X"0000000000000001";
                     end if;
                     wait for CLK_PERIOD / 130;
+                    assert(SIG_INVALID_D = '0')
+                    report("ERROR: SRA -> Wrong SIGN_INVALID Value.");
                     assert(VOUT_D = to_stdlogicvector(to_bitvector(TEMP_SIG) sra i))
                     report("ERROR: SRA value incorect 0");
                     assert(VOUT_D(63) = '1')
@@ -288,19 +342,50 @@ begin
                 end loop;
                 OP1_D <= X"0FFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "001000";
+                SEL_D <= "1000";
                 wait for CLK_PERIOD / 66;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SRA -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = to_stdlogicvector(to_bitvector(OP1_D) sra 63))
                 report("ERROR: SRA value incorect 2");
                 assert(VOUT_D(63) = '0')
                 report("ERROR: SRA value incorect 3");
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "001000";
+                SEL_D <= "1000";
                 wait for CLK_PERIOD / 66;
+                assert(SIG_INVALID_D = '0')
+                report("ERROR: SRA -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"FFFFFFFFFFFFFFFF")
-                report("ERROR: SRA value incorect 4");    
-           
+                report("ERROR: SRA value incorect 4");   
+            -- INVALID
+            elsif(COUNTER < 11) then               
+                
+                SEL_D <= "1010";
+                wait for CLK_PERIOD / 6;
+                assert(SIG_INVALID_D = '1')
+                report("ERROR: INVALID -> Wrong SIGN_INVALID Value.");
+                SEL_D <= "1011";
+                wait for CLK_PERIOD / 6;
+                assert(SIG_INVALID_D = '1')
+                report("ERROR: INVALID -> Wrong SIGN_INVALID Value.");
+                SEL_D <= "1100";
+                wait for CLK_PERIOD / 6;
+                assert(SIG_INVALID_D = '1')
+                report("ERROR: INVALID -> Wrong SIGN_INVALID Value.");
+                SEL_D <= "1101";
+                wait for CLK_PERIOD / 6;
+                assert(SIG_INVALID_D = '1')
+                report("ERROR: INVALID -> Wrong SIGN_INVALID Value.");
+                SEL_D <= "1110";
+                wait for CLK_PERIOD / 6;
+                assert(SIG_INVALID_D = '1')
+                report("ERROR: INVALID -> Wrong SIGN_INVALID Value.");
+                SEL_D <= "1111";
+                wait for CLK_PERIOD / 6;
+                assert(SIG_INVALID_D = '1')
+                report("ERROR: INVALID -> Wrong SIGN_INVALID Value.");
+
             elsif (NOTIFY = '0') then
                 NOTIFY <= '1';
                 report "Test finished" severity note;   
