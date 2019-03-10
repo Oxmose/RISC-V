@@ -31,10 +31,12 @@ entity BRANCH_UNIT_MODULE is
     Port ( OP1 :      in STD_LOGIC_VECTOR(63 downto 0);
            OP2 :      in STD_LOGIC_VECTOR(63 downto 0);
            OFF :      in STD_LOGIC_VECTOR(63 downto 0);
+           RD_IN :    in STD_LOGIC_VECTOR(63 downto 0);
            PC_IN :    in STD_LOGIC_VECTOR(63 downto 0);
            SEL :      in STD_LOGIC_VECTOR(3 downto 0);
            RD_OUT :   out STD_LOGIC_VECTOR(63 downto 0);
-           PC_OUT :   out STD_LOGIC_VECTOR(63 downto 0)
+           PC_OUT :   out STD_LOGIC_VECTOR(63 downto 0);
+           B_TAKEN :  out STD_LOGIC
     );
 end BRANCH_UNIT_MODULE;
 
@@ -48,39 +50,45 @@ signal BLTU_RES : STD_LOGIC_VECTOR(63 downto 0);
 signal BGE_RES :  STD_LOGIC_VECTOR(63 downto 0);
 signal BGEU_RES : STD_LOGIC_VECTOR(63 downto 0);
 
-signal NEXT_INST : STD_LOGIC_VECTOR(63 downto 0);
 signal SHIFT_OFF_NEXT : STD_LOGIC_VECTOR(63 downto 0);
+signal NEXT_PC :        STD_LOGIC_VECTOR(63 downto 0);
 
 -- Constants
 constant INSTRUCTION_WIDTH: integer := 4;
 
 begin
     -- Get next isntruction 
-    NEXT_INST      <= STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + INSTRUCTION_WIDTH);
     SHIFT_OFF_NEXT <= STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + SHIFT_LEFT(UNSIGNED(OFF), 1));
 
     -- Compute branch conditions 
-    BEQ_RES  <= SHIFT_OFF_NEXT WHEN OP1 = OP2                      ELSE NEXT_INST;
-    BNE_RES  <= SHIFT_OFF_NEXT WHEN OP1 /= OP2                     ELSE NEXT_INST;
-    BLT_RES  <= SHIFT_OFF_NEXT WHEN SIGNED(OP1) < SIGNED(OP2)      ELSE NEXT_INST;   
-    BLTU_RES <= SHIFT_OFF_NEXT WHEN UNSIGNED(OP1) < UNSIGNED(OP2)  ELSE NEXT_INST;
-    BGE_RES  <= SHIFT_OFF_NEXT WHEN SIGNED(OP1) >= SIGNED(OP2)     ELSE NEXT_INST; 
-    BGEU_RES <= SHIFT_OFF_NEXT WHEN UNSIGNED(OP1) >= UNSIGNED(OP2) ELSE NEXT_INST; 
+    BEQ_RES  <= SHIFT_OFF_NEXT WHEN OP1 = OP2                      ELSE PC_IN;
+    BNE_RES  <= SHIFT_OFF_NEXT WHEN OP1 /= OP2                     ELSE PC_IN;
+    BLT_RES  <= SHIFT_OFF_NEXT WHEN SIGNED(OP1) < SIGNED(OP2)      ELSE PC_IN;
+    BLTU_RES <= SHIFT_OFF_NEXT WHEN UNSIGNED(OP1) < UNSIGNED(OP2)  ELSE PC_IN;
+    BGE_RES  <= SHIFT_OFF_NEXT WHEN SIGNED(OP1) >= SIGNED(OP2)     ELSE PC_IN;
+    BGEU_RES <= SHIFT_OFF_NEXT WHEN UNSIGNED(OP1) >= UNSIGNED(OP2) ELSE PC_IN;
+    
+    B_TAKEN <= '0' WHEN PC_IN = NEXT_PC ELSE '1';
+    
+    -- NEXT_PC to PC_OUT
+    PC_OUT <= NEXT_PC;
                 
     -- Link RD_OUT WITH PC + 4 or AUIPC result
     WITH SEL SELECT RD_OUT <=
         -- AUIPC
         STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + UNSIGNED(OFF)) WHEN "1000",
+        -- JAL JALR
+        STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + INSTRUCTION_WIDTH) WHEN "1001" | "1010",
         -- Others
-        NEXT_INST WHEN OTHERS;
+        RD_IN WHEN OTHERS;
 
     -- Operation selector
-    WITH SEL SELECT PC_OUT <= 
+    WITH SEL SELECT NEXT_PC <= 
        -- AUIPC
        STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + UNSIGNED(OFF)) WHEN "1000",
        -- JAL
        SHIFT_OFF_NEXT WHEN "1001",
-       -- JARL
+       -- JALR
        STD_LOGIC_VECTOR(UNSIGNED(OP1) + UNSIGNED(OFF)) AND X"FFFFFFFFFFFFFFFE" WHEN "1010",
        -- BEQ
        BEQ_RES WHEN "0000",
@@ -93,7 +101,8 @@ begin
        -- BLTU
        BLTU_RES WHEN "0110",
        -- BGEU
-       BGE_RES WHEN "0111",
+       BGEU_RES WHEN "0111",
        -- UNKNOWN
        (others => '1') WHEN OTHERS;
+       
 end BRANCH_UNIT_MODULE_FLOW;
