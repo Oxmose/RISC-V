@@ -27,15 +27,21 @@ end TB_ID_STAGE;
 architecture TB_ID_STAGE_BEHAVE of TB_ID_STAGE is
 
 component ID_STAGE is
-    Port (CLK :   in STD_LOGIC;
-          RST :   in STD_LOGIC;
-          STALL : in STD_LOGIC;
-          INSTRUCTION_DATA : in STD_LOGIC_VECTOR (63 downto 0);   
-          OPERAND_0:         out STD_LOGIC_VECTOR(63 downto 0);    
-          OPERAND_1:         out STD_LOGIC_VECTOR(63 downto 0);
-          RD :               out STD_LOGIC_VECTOR(4 downto 0);
-          ALU_OP :           out STD_LOGIC_VECTOR(5 downto 0);
-          SIG_INVALID :      out STD_LOGIC );
+    Port (INSTRUCTION_DATA : in STD_LOGIC_VECTOR (63 downto 0); 
+             
+           REG_RVAL1 :        in STD_LOGIC_VECTOR(63 downto 0);
+           REG_RVAL2 :        in STD_LOGIC_VECTOR(63 downto 0);
+           
+           OPERAND_0:         out STD_LOGIC_VECTOR(63 downto 0);    
+           OPERAND_1:         out STD_LOGIC_VECTOR(63 downto 0);
+           RD :               out STD_LOGIC_VECTOR(4 downto 0);
+           ALU_OP :           out STD_LOGIC_VECTOR(5 downto 0);
+           OP_TYPE :          out STD_LOGIC_VECTOR(5 downto 0);
+           
+           REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
+           REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
+           
+           SIG_INVALID :      out STD_LOGIC);
 end component;
 
 signal OP_DATA : STD_LOGIC_VECTOR(6 downto 0);
@@ -46,9 +52,15 @@ signal OPERAND_0_D : STD_LOGIC_VECTOR(63 downto 0);
 signal OPERAND_1_D : STD_LOGIC_VECTOR(63 downto 0);
 signal RD_D : STD_LOGIC_VECTOR(4 downto 0);
 signal ALU_OP_D : STD_LOGIC_VECTOR(5 downto 0);
-signal CLK_D : STD_LOGIC;
-signal RST_D : STD_LOGIC;
-signal STALL_D : STD_LOGIC;
+signal OP_TYPE_D : STD_LOGIC_VECTOR(5 downto 0);
+
+signal REG_VAL1_D : STD_LOGIC_VECTOR(63 downto 0);
+signal REG_VAL2_D : STD_LOGIC_VECTOR(63 downto 0);
+
+
+signal REG_RID1_D : STD_LOGIC_VECTOR(4 downto 0);
+signal REG_RID2_D : STD_LOGIC_VECTOR(4 downto 0);
+
 signal SIG_INVALID_D : STD_LOGIC;
 
 signal NOTIFY: STD_LOGIC;
@@ -60,34 +72,33 @@ constant CLK_PERIOD : time := 10ns;
 begin
     
      ID: ID_STAGE Port Map(
-        CLK => CLK_D,
-        RST => RST_D,
-        STALL => STALL_D,
         INSTRUCTION_DATA => INSTRUCTION_DATA_D,
+        REG_RVAL1 => REG_VAL1_D,
+        REG_RVAL2 => REG_VAL2_D,
+         
         OPERAND_0 => OPERAND_0_D,
         OPERAND_1 => OPERAND_1_D,
         RD => RD_D,
         ALU_OP => ALU_OP_D,
+        OP_TYPE => OP_TYPE_D,
+        
+        REG_RID1 => REG_RID1_D,
+        REG_RID2 => REG_RID2_D,
+                          
         SIG_INVALID => SIG_INVALID_D
       );
       
-    CLK_PROC: process
-    begin
-        CLK_D <= '0';
-        WAIT FOR CLK_PERIOD;
-        CLK_D <= '1';
-        WAIT FOR CLK_PERIOD;
-    end process;
     
     TEST_CLK_DRIVE: process
     begin            
         -- Init
         if(COUNTER < 1) then
-            RST_D <= '1';
-            STALL_D <= '0';
             INSTRUCTION_DATA_D <= (others => '1');
             REG_DATA <= (others => '1');
             NOTIFY <= '0';
+            REG_VAL1_D <= x"0F0F0F0F0F0F0F0F";
+            REG_VAL2_D <= x"0000000000000011";
+                    
             wait for CLK_PERIOD;
         -- Test invalid 
         elsif(COUNTER < 2) then
@@ -152,6 +163,452 @@ begin
                 assert(RD_D = REG_DATA)
                 report "ERROR: Wrong RD Value.";                
             end loop;
+        -- Test OP-IMM Decode
+        elsif(COUNTER < 4) then
+            INSTRUCTION_DATA_D <= X"00000000" & "100000010101" & "00011" &  "000" & "00101" & "0010011"; 
+                       
+            -- ADDI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "000";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000000")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            assert(OP_TYPE_D = "000000")
+            report "ERROR: OP-IMM -> Wrong OP_TYPE Value.";
+            
+            -- SLTI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "010";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000010")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- SLTUI
+            INSTRUCTION_DATA_D(14 downto 12) <= "011";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000011")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- ANDI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "111";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000111")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- ORI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "110";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000110")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- XORI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "100";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000100")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- SLLI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "001";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000001")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- SRLI 
+            INSTRUCTION_DATA_D(14 downto 12) <= "101";
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "000101")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+            -- SRAI
+            INSTRUCTION_DATA_D(14 downto 12) <= "101";
+            INSTRUCTION_DATA_D(30) <= '1';
+            wait for CLK_PERIOD / 9;
+            assert(RD_D = "00101")
+            report "ERROR: OP-IMM -> Wrong RD Value.";
+                
+            assert(REG_RID1_D = "00011")
+            report "ERROR: OP-IMM -> Wrong RS1 Value.";
+            
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: OP-IMM -> Wrong OP0 Value.";
+            
+            assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "110000010101")
+            report "ERROR: OP-IMM -> Wrong OP1 Value.";
+            
+            assert(ALU_OP_D = "001000")
+            report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
+            
+         -- Test LUI Decode
+         elsif(COUNTER < 5) then
+             INSTRUCTION_DATA_D <= X"0000000000001" & "10111" & "0110111"; 
+            
+           wait for CLK_PERIOD;
+           assert(RD_D = "10111")
+           report "ERROR: LUI -> Wrong RD Value.";
+           
+           assert(OPERAND_0_D = X"0000000000001000")
+           report "ERROR: LUI -> Wrong OP0 Value.";
+           
+           assert(OP_TYPE_D = "000001")
+           report "ERROR: LUI -> Wrong OP_TYPE Value.";
+           
+        -- Test AUIPC Decode
+        elsif(COUNTER < 6) then
+            INSTRUCTION_DATA_D <= X"0000000000101" & "10101" & "0010111"; 
+           
+          wait for CLK_PERIOD;
+          assert(RD_D = "10101")
+          report "ERROR: AUIPCI -> Wrong RD Value.";
+          
+          assert(OPERAND_0_D = X"0000000000101000")
+          report "ERROR: AUIPC -> Wrong OP0 Value.";
+          
+          assert(OP_TYPE_D = "000010")
+          report "ERROR: AUIPC -> Wrong OP_TYPE Value.";
+          
+          
+          -- Test OP Decode
+          elsif(COUNTER < 7) then
+              INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "0110011"; 
+                         
+              -- ADD
+              INSTRUCTION_DATA_D(14 downto 12) <= "000";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+              report "ERROR: OP -> Wrong RS1 Value.";
+              
+              assert(REG_RID2_D = "10101")
+              report "ERROR: OP -> Wrong RS2 Value.";
+              
+              assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+              report "ERROR: OP -> Wrong OP0 Value.";
+              
+              assert(OPERAND_1_D = X"0000000000000011")
+              report "ERROR: OP -> Wrong OP1 Value.";
+              
+              assert(ALU_OP_D = "000000")
+              report "ERROR: OP -> Wrong ALU_OP Value.";
+              
+              assert(OP_TYPE_D = "000000")
+              report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              
+              -- SUB
+              INSTRUCTION_DATA_D(14 downto 12) <= "000";
+              INSTRUCTION_DATA_D(30) <= '1';
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                
+              assert(REG_RID1_D = "00011")
+              report "ERROR: OP -> Wrong RS1 Value.";
+              
+              assert(REG_RID2_D = "10101")
+              report "ERROR: OP -> Wrong RS2 Value.";
+            
+              assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+              report "ERROR: OP -> Wrong OP0 Value.";
+            
+              assert(OPERAND_1_D = X"0000000000000011")
+              report "ERROR: OP -> Wrong OP1 Value.";
+            
+              assert(ALU_OP_D = "001001")
+              report "ERROR: OP -> Wrong ALU_OP Value.";
+            
+              assert(OP_TYPE_D = "000000")
+              report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- SLT
+              INSTRUCTION_DATA_D(14 downto 12) <= "010";
+              INSTRUCTION_DATA_D(30) <= '0';
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+              report "ERROR: OP -> Wrong RS1 Value.";
+              
+              assert(REG_RID2_D = "10101")
+              report "ERROR: OP -> Wrong RS2 Value.";
+             
+              assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+              report "ERROR: OP -> Wrong OP0 Value.";
+             
+              assert(OPERAND_1_D = X"0000000000000011")
+              report "ERROR: OP -> Wrong OP1 Value.";
+             
+              assert(ALU_OP_D = "000010")
+              report "ERROR: OP -> Wrong ALU_OP Value.";
+             
+              assert(OP_TYPE_D = "000000")
+              report "ERROR: OP -> Wrong OP_TYPE Value.";
+  
+              -- SLTU
+              INSTRUCTION_DATA_D(14 downto 12) <= "011";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+              report "ERROR: OP -> Wrong RS1 Value.";
+                
+              assert(REG_RID2_D = "10101")
+              report "ERROR: OP -> Wrong RS2 Value.";
+               
+              assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+              report "ERROR: OP -> Wrong OP0 Value.";
+               
+              assert(OPERAND_1_D = X"0000000000000011")
+              report "ERROR: OP -> Wrong OP1 Value.";
+               
+              assert(ALU_OP_D = "000011")
+              report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+              assert(OP_TYPE_D = "000000")
+              report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- AND
+              INSTRUCTION_DATA_D(14 downto 12) <= "111";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+                report "ERROR: OP -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "10101")
+                report "ERROR: OP -> Wrong RS2 Value.";
+               
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: OP -> Wrong OP0 Value.";
+               
+                assert(OPERAND_1_D = X"0000000000000011")
+                report "ERROR: OP -> Wrong OP1 Value.";
+               
+                assert(ALU_OP_D = "000111")
+                report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+                assert(OP_TYPE_D = "000000")
+                report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- OR
+              INSTRUCTION_DATA_D(14 downto 12) <= "110";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+                report "ERROR: OP -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "10101")
+                report "ERROR: OP -> Wrong RS2 Value.";
+               
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: OP -> Wrong OP0 Value.";
+               
+                assert(OPERAND_1_D = X"0000000000000011")
+                report "ERROR: OP -> Wrong OP1 Value.";
+               
+                assert(ALU_OP_D = "000110")
+                report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+                assert(OP_TYPE_D = "000000")
+                report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- XOR
+              INSTRUCTION_DATA_D(14 downto 12) <= "100";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+                report "ERROR: OP -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "10101")
+                report "ERROR: OP -> Wrong RS2 Value.";
+               
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: OP -> Wrong OP0 Value.";
+               
+                assert(OPERAND_1_D = X"0000000000000011")
+                report "ERROR: OP -> Wrong OP1 Value.";
+               
+                assert(ALU_OP_D = "000100")
+                report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+                assert(OP_TYPE_D = "000000")
+                report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- SLLI 
+              INSTRUCTION_DATA_D(14 downto 12) <= "001";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+                report "ERROR: OP -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "10101")
+                report "ERROR: OP -> Wrong RS2 Value.";
+               
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: OP -> Wrong OP0 Value.";
+               
+                assert(OPERAND_1_D = X"0000000000000011")
+                report "ERROR: OP -> Wrong OP1 Value.";
+               
+                assert(ALU_OP_D = "000001")
+                report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+                assert(OP_TYPE_D = "000000")
+                report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- SRL
+              INSTRUCTION_DATA_D(14 downto 12) <= "101";
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+                report "ERROR: OP -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "10101")
+                report "ERROR: OP -> Wrong RS2 Value.";
+               
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: OP -> Wrong OP0 Value.";
+               
+                assert(OPERAND_1_D = X"0000000000000011")
+                report "ERROR: OP -> Wrong OP1 Value.";
+               
+                assert(ALU_OP_D = "000101")
+                report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+                assert(OP_TYPE_D = "000000")
+                report "ERROR: OP -> Wrong OP_TYPE Value.";
+              
+              -- SRAI
+              INSTRUCTION_DATA_D(14 downto 12) <= "101";
+              INSTRUCTION_DATA_D(30) <= '1';
+              wait for CLK_PERIOD / 10;
+              assert(RD_D = "00101")
+              report "ERROR: OP -> Wrong RD Value.";
+                  
+              assert(REG_RID1_D = "00011")
+                report "ERROR: OP -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "10101")
+                report "ERROR: OP -> Wrong RS2 Value.";
+               
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: OP -> Wrong OP0 Value.";
+               
+                assert(OPERAND_1_D = X"0000000000000011")
+                report "ERROR: OP -> Wrong OP1 Value.";
+               
+                assert(ALU_OP_D = "001000")
+                report "ERROR: OP -> Wrong ALU_OP Value.";
+               
+                assert(OP_TYPE_D = "000000")
+                report "ERROR: OP -> Wrong OP_TYPE Value.";
         else 
             if(NOTIFY = '0') then
                 NOTIFY <= '1';
