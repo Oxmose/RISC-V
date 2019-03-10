@@ -29,11 +29,13 @@ architecture TB_ID_STAGE_BEHAVE of TB_ID_STAGE is
 component ID_STAGE is
     Port ( INSTRUCTION_DATA : in STD_LOGIC_VECTOR(63 downto 0); 
            PC :               in STD_LOGIC_VECTOR(63 downto 0);
+           
            REG_RVAL1 :        in STD_LOGIC_VECTOR(63 downto 0);
            REG_RVAL2 :        in STD_LOGIC_VECTOR(63 downto 0);
            
-           OPERAND_0:         out STD_LOGIC_VECTOR(63 downto 0);    
-           OPERAND_1:         out STD_LOGIC_VECTOR(63 downto 0);
+           OPERAND_0 :        out STD_LOGIC_VECTOR(63 downto 0);    
+           OPERAND_1 :        out STD_LOGIC_VECTOR(63 downto 0);
+           OPERAND_OFF :      out STD_LOGIC_VECTOR(63 downto 0);
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
            ALU_OP :           out STD_LOGIC_VECTOR(5 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
@@ -42,7 +44,8 @@ component ID_STAGE is
            REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
            REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
            
-           SIG_INVALID :      out STD_LOGIC);
+           SIG_INVALID :      out STD_LOGIC
+    );
 end component;
 
 signal OP_DATA : STD_LOGIC_VECTOR(6 downto 0);
@@ -52,6 +55,7 @@ signal INSTRUCTION_DATA_D : STD_LOGIC_VECTOR(63 downto 0);
 signal PC_D : STD_LOGIC_VECTOR(63 downto 0);
 signal OPERAND_0_D : STD_LOGIC_VECTOR(63 downto 0);
 signal OPERAND_1_D : STD_LOGIC_VECTOR(63 downto 0);
+signal OPERAND_OFF_D : STD_LOGIC_VECTOR(63 downto 0);
 signal RD_D : STD_LOGIC_VECTOR(4 downto 0);
 signal ALU_OP_D : STD_LOGIC_VECTOR(5 downto 0);
 signal BRANCH_OP_D : STD_LOGIC_VECTOR(3 downto 0);
@@ -72,6 +76,14 @@ signal COUNTER : integer := 0;
 
 constant CLK_PERIOD : time := 10ns;
 
+constant OP_IMM_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "0010011";
+constant OP_OPCODE     : STD_LOGIC_VECTOR(6 downto 0) := "0110011";
+constant LUI_OPCODE    : STD_LOGIC_VECTOR(6 downto 0) := "0110111";
+constant AUIPC_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0010111"; 
+constant JAL_OPCODE    : STD_LOGIC_VECTOR(6 downto 0) := "1101111";
+constant JALR_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "1100111"; 
+constant BRANCH_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
+
 begin
     
      ID: ID_STAGE Port Map(
@@ -83,6 +95,7 @@ begin
          
         OPERAND_0 => OPERAND_0_D,
         OPERAND_1 => OPERAND_1_D,
+        OPERAND_OFF => OPERAND_OFF_D,
         RD => RD_D,
         ALU_OP => ALU_OP_D,
         BRANCH_OP => BRANCH_OP_D,
@@ -125,31 +138,14 @@ begin
                 if(OP_DATA(1 downto 0) /= "11") then
                     assert(SIG_INVALID_D = '1')
                     report "ERROR: SIG_INVALID not detected.";
-                elsif(OP_DATA(6 downto 2) = "00000" OR
-                      OP_DATA(6 downto 2) = "00001" OR
-                      OP_DATA(6 downto 2) = "00011" OR
-                      OP_DATA(6 downto 2) = "00100" OR
-                      OP_DATA(6 downto 2) = "00101" OR
-                      OP_DATA(6 downto 2) = "00110" OR
-                      
-                      OP_DATA(6 downto 2) = "01000" OR
-                      OP_DATA(6 downto 2) = "01001" OR
-                      OP_DATA(6 downto 2) = "01011" OR
-                      OP_DATA(6 downto 2) = "01100" OR
-                      OP_DATA(6 downto 2) = "01101" OR
-                      OP_DATA(6 downto 2) = "01110" OR
-                      
-                      OP_DATA(6 downto 2) = "10000" OR
-                      OP_DATA(6 downto 2) = "10001" OR
-                      OP_DATA(6 downto 2) = "10010" OR
-                      OP_DATA(6 downto 2) = "10011" OR
-                      OP_DATA(6 downto 2) = "10100" OR
-                      
-                      OP_DATA(6 downto 2) = "11000" OR
-                      OP_DATA(6 downto 2) = "11001" OR
-                      OP_DATA(6 downto 2) = "11000" OR
-                      OP_DATA(6 downto 2) = "11011" OR
-                      OP_DATA(6 downto 2) = "11100") then
+                    
+                elsif(OP_DATA(6 downto 0) = OP_IMM_OPCODE OR
+                      OP_DATA(6 downto 0) = OP_OPCODE OR
+                      OP_DATA(6 downto 0) = LUI_OPCODE OR
+                      OP_DATA(6 downto 0) = AUIPC_OPCODE OR
+                      OP_DATA(6 downto 0) = JAL_OPCODE OR
+                      OP_DATA(6 downto 0) = JALR_OPCODE OR                      
+                      OP_DATA(6 downto 0) = BRANCH_OPCODE ) then
                     assert(SIG_INVALID_D = '0')
                     report "ERROR: SIG_INVALID detected.";
                       
@@ -658,7 +654,221 @@ begin
             report "ERROR: JARL -> Wrong OP_TYPE Value.";
             
             assert(BRANCH_OP_D = "1010")
-            report "ERROR: AUIPC -> Wring BRANCH_OP Value.";  
+            report "ERROR: JARL -> Wring BRANCH_OP Value.";  
+        -- Test BRANCHES Decode 
+        elsif(COUNTER < 10) then
+            REG_VAL1_D <= x"0F0F0F0F0F0F0F0F";
+            REG_VAL2_D <= x"0000000000000011";
+        
+            -- BEQ
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "01011" & "00011" & "000" & "11010" & "1100011";
+            wait for CLK_PERIOD / 6;
+            
+            assert(REG_RID1_D = "00011")
+            report "ERROR: BEQ -> Wrong RS1 Value.";
+            
+            assert(REG_RID2_D = "01011")
+            report "ERROR: BEQ -> Wrong RS2 Value.";
+          
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: BEQ -> Wrong OP0 Value.";
+                    
+            assert(OPERAND_1_D = X"0000000000000011")
+            report "ERROR: BEQ -> Wrong OP1 Value.";
+            
+            assert(OPERAND_OFF_D = X"000000000000001A")
+            report "ERROR: BEQ -> Wrong OP_OFF Value.";
+          
+            assert(OP_TYPE_D = "0010")
+            report "ERROR: BEQ -> Wrong OP_TYPE Value.";
+            
+            assert(BRANCH_OP_D = "0000")
+            report "ERROR: BEQ -> Wring BRANCH_OP Value.";
+            
+            -- BNE
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "01011" & "00011" & "001" & "11010" & "1100011";
+            wait for CLK_PERIOD / 6;
+            
+            assert(REG_RID1_D = "00011")
+            report "ERROR: BNE -> Wrong RS1 Value.";
+            
+            assert(REG_RID2_D = "01011")
+            report "ERROR: BNE -> Wrong RS2 Value.";
+          
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: BNE -> Wrong OP0 Value.";
+                    
+            assert(OPERAND_1_D = X"0000000000000011")
+            report "ERROR: BNE -> Wrong OP1 Value.";
+            
+            assert(OPERAND_OFF_D = X"000000000000001A")
+            report "ERROR: BNE -> Wrong OP_OFF Value.";
+          
+            assert(OP_TYPE_D = "0010")
+            report "ERROR: BNE -> Wrong OP_TYPE Value.";
+            
+            assert(BRANCH_OP_D = "0001")
+            report "ERROR: BNE -> Wring BRANCH_OP Value.";
+            
+            -- BLT
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "01011" & "00011" & "100" & "11010" & "1100011";
+            wait for CLK_PERIOD / 6;
+            
+            assert(REG_RID1_D = "00011")
+            report "ERROR: BLT -> Wrong RS1 Value.";
+            
+            assert(REG_RID2_D = "01011")
+            report "ERROR: BLT -> Wrong RS2 Value.";
+          
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: BLT -> Wrong OP0 Value.";
+                    
+            assert(OPERAND_1_D = X"0000000000000011")
+            report "ERROR: BLT -> Wrong OP1 Value.";
+            
+            assert(OPERAND_OFF_D = X"000000000000001A")
+            report "ERROR: BLT -> Wrong OP_OFF Value.";
+          
+            assert(OP_TYPE_D = "0010")
+            report "ERROR: BLT -> Wrong OP_TYPE Value.";
+            
+            assert(BRANCH_OP_D = "0100")
+            report "ERROR: BLT -> Wring BRANCH_OP Value.";
+                        
+            -- BGE
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "01011" & "00011" & "101" & "11010" & "1100011";
+            wait for CLK_PERIOD / 6;
+            
+            assert(REG_RID1_D = "00011")
+            report "ERROR: BGE -> Wrong RS1 Value.";
+            
+            assert(REG_RID2_D = "01011")
+            report "ERROR: BGE -> Wrong RS2 Value.";
+          
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: BGE -> Wrong OP0 Value.";
+                    
+            assert(OPERAND_1_D = X"0000000000000011")
+            report "ERROR: BGE -> Wrong OP1 Value.";
+            
+            assert(OPERAND_OFF_D = X"000000000000001A")
+            report "ERROR: BGE -> Wrong OP_OFF Value.";
+          
+            assert(OP_TYPE_D = "0010")
+            report "ERROR: BGE -> Wrong OP_TYPE Value.";
+            
+            assert(BRANCH_OP_D = "0101")
+            report "ERROR: BGE -> Wring BRANCH_OP Value.";
+            
+            -- BLTU
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "01011" & "00011" & "110" & "11010" & "1100011";
+            wait for CLK_PERIOD / 6;
+            
+            assert(REG_RID1_D = "00011")
+            report "ERROR: BLTU -> Wrong RS1 Value.";
+            
+            assert(REG_RID2_D = "01011")
+            report "ERROR: BLTU -> Wrong RS2 Value.";
+          
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: BLTU -> Wrong OP0 Value.";
+                    
+            assert(OPERAND_1_D = X"0000000000000011")
+            report "ERROR: BLTU -> Wrong OP1 Value.";
+            
+            assert(OPERAND_OFF_D = X"000000000000001A")
+            report "ERROR: BLTU -> Wrong OP_OFF Value.";
+          
+            assert(OP_TYPE_D = "0010")
+            report "ERROR: BLTU -> Wrong OP_TYPE Value.";
+            
+            assert(BRANCH_OP_D = "0110")
+            report "ERROR: BLTU -> Wring BRANCH_OP Value.";
+                        
+            -- BGEU
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "01011" & "00011" & "111" & "11010" & "1100011";
+            wait for CLK_PERIOD / 6;
+            
+            assert(REG_RID1_D = "00011")
+            report "ERROR: BGEU -> Wrong RS1 Value.";
+            
+            assert(REG_RID2_D = "01011")
+            report "ERROR: BGEU -> Wrong RS2 Value.";
+          
+            assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+            report "ERROR: BGEU -> Wrong OP0 Value.";
+                    
+            assert(OPERAND_1_D = X"0000000000000011")
+            report "ERROR: BGEU -> Wrong OP1 Value.";
+            
+            assert(OPERAND_OFF_D = X"000000000000001A")
+            report "ERROR: BGEU -> Wrong OP_OFF Value.";
+          
+            assert(OP_TYPE_D = "0010")
+            report "ERROR: BGEU -> Wrong OP_TYPE Value.";
+            
+            assert(BRANCH_OP_D = "0111")
+            report "ERROR: BGEU -> Wring BRANCH_OP Value.";
+        -- Test INVLID FUNCT Decode 
+        elsif(COUNTER < 11) then        
+            -- OP
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "0110011"; 
+            for i in 0 to 127 loop
+                INSTRUCTION_DATA_D(31 downto 25) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 7));
+                wait for CLK_PERIOD / 272;
+                if(i = 0) then
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID0 -> Wring SIG_INVALID Value."; 
+                elsif(i = 32) then
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID1 -> Wring SIG_INVALID Value."; 
+                else 
+                    assert(SIG_INVALID_D = '1')
+                    report "ERROR: INVALID2 -> Wring SIG_INVALID Value."; 
+                end if;
+            end loop;
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "101" & "00101" & "0110011"; 
+            for i in 0 to 127 loop
+                INSTRUCTION_DATA_D(31 downto 25) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 7));
+                wait for CLK_PERIOD / 272;
+                if(i = 0) then
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID3 -> Wring SIG_INVALID Value."; 
+                elsif(i = 32) then
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID4 -> Wring SIG_INVALID Value."; 
+                else 
+                    assert(SIG_INVALID_D = '1')
+                    report "ERROR: INVALID5 -> Wring SIG_INVALID Value."; 
+                end if;
+            end loop;
+            -- JALR
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "1100111"; 
+            for i in 0 to 7 loop
+                INSTRUCTION_DATA_D(14 downto 12) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3));
+                wait for CLK_PERIOD / 272;
+                if(i = 0) then
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID6 -> Wring SIG_INVALID Value."; 
+                else 
+                    assert(SIG_INVALID_D = '1')
+                    report "ERROR: INVALID7 -> Wring SIG_INVALID Value."; 
+                end if;
+            end loop;
+            -- BRANCH
+            INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "1100011"; 
+            for i in 0 to 7 loop
+                INSTRUCTION_DATA_D(14 downto 12) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3));
+                wait for CLK_PERIOD / 272;
+                if(i = 2 or i = 3) then
+                    assert(SIG_INVALID_D = '1')
+                    report "ERROR: INVALID8 -> Wring SIG_INVALID Value."; 
+                else 
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID9 -> Wring SIG_INVALID Value."; 
+                end if;
+            end loop;
+                              
         else 
             if(NOTIFY = '0') then
                 NOTIFY <= '1';

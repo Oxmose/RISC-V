@@ -76,21 +76,28 @@ signal IMM_U :            STD_LOGIC_VECTOR(63 downto 0);
 signal IMM_J :            STD_LOGIC_VECTOR(63 downto 0);
 
 -- Constants
+constant OP_IMM_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "0010011";
+constant OP_OPCODE     : STD_LOGIC_VECTOR(6 downto 0) := "0110011";
+constant LUI_OPCODE    : STD_LOGIC_VECTOR(6 downto 0) := "0110111";
+constant AUIPC_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0010111"; 
+constant JAL_OPCODE    : STD_LOGIC_VECTOR(6 downto 0) := "1101111";
+constant JALR_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "1100111"; 
+constant BRANCH_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
 
 -- Components 
 
 begin    
     -- Check OPCODE, no custom nor reserved OPCODE is supported
-    WITH INSTRUCTION_DATA(6 downto 0) SELECT SIG_INVALID <=
-        '0' WHEN "0000011" | "0100011" | "1000011" | "1100011", -- LOAD STORE MADD BRANCH
-        '0' WHEN "0000111" | "0100111" | "1000111" | "1100111", -- LOADFP STOREFP MSUB JALR
-        '0' WHEN "1001011",                                     -- NMSUB
-        '0' WHEN "0001111" | "0101111" | "1001111" | "1101111", -- MISC-MEM AMO NMADD JAL
-        '0' WHEN "0010011" | "0110011" | "1010011" | "1110011", -- OP-IMM OP OP-FP SYSTEM
-        '0' WHEN "0010111" | "0110111",                         -- AUIPC LUI
-        '0' WHEN "0011011" | "0111011",                         -- OP-IMM-32 OP-32
-        '1' WHEN OTHERS;
-            
+    --WITH INSTRUCTION_DATA(6 downto 0) SELECT SIG_INVALID <=
+    --    '0' WHEN "0000011" | "0100011" | "1000011" | "1100011", -- LOAD STORE MADD BRANCH
+    --    '0' WHEN "0000111" | "0100111" | "1000111" | "1100111", -- LOADFP STOREFP MSUB JALR
+    --    '0' WHEN "1001011",                                     -- NMSUB
+    --    '0' WHEN "0001111" | "0101111" | "1001111" | "1101111", -- MISC-MEM AMO NMADD JAL
+    --    '0' WHEN "0010011" | "0110011" | "1010011" | "1110011", -- OP-IMM OP OP-FP SYSTEM
+    --    '0' WHEN "0010111" | "0110111",                         -- AUIPC LUI
+    --    '0' WHEN "0011011" | "0111011",                         -- OP-IMM-32 OP-32
+    --    '1' WHEN OTHERS;
+     
      -- As defined by RISC-V RV64I, opcode is defined by the 7 first bits
      OPCODE <= INSTRUCTION_DATA(6 downto 0);
    
@@ -143,110 +150,133 @@ begin
                             FUNCT3, FUNCT7, 
                             IMM_I, IMM_S, IMM_B, IMM_U, IMM_J)
     begin 
+        SIG_INVALID <= '0';
+        CASE OPCODE IS
+            WHEN OP_IMM_OPCODE =>                                -- OP-IMM      
+                -- Set OP Type as ALU type 
+                OP_TYPE <= "0000";
+            
+                -- Select RS1 value as first operand
+                REG_RID1  <= RS1;
+                OPERAND_0 <= REG_RVAL1;
+                
+                -- Select IMM as second operand
+                OPERAND_1  <= IMM_I;
+                
+                -- Select the ALU operation
+                ALU_OP <= "000" & FUNCT3;
+                
+                -- Check the SR A/L operation
+                if(FUNCT3 = "101" AND IMM_I(10) = '1') then
+                    ALU_OP <= "001000";                
+                end if;
+                
+            WHEN OP_OPCODE =>                                -- OP
+                -- Check FUNCT7
+                if(FUNCT7 /= "0000000") then
+                    if(FUNCT7 /= "0100000") then
+                        SIG_INVALID <= '1';
+                    elsif(FUNCT3 /= "000" AND FUNCT3 /= "101") then
+                        SIG_INVALID <= '1';
+                    end if;
+                end if;
+            
+                -- Set OP Type as ALU type 
+                OP_TYPE <= "0000";
+            
+                -- Select RS1 value as first operand
+                REG_RID1  <= RS1;
+                OPERAND_0 <= REG_RVAL1;
+                
+                -- Select RS2 value as second operand
+                REG_RID2  <= RS2;
+                OPERAND_1 <= REG_RVAL2;
+                
+                -- Select the ALU operation
+                ALU_OP <= "000" & FUNCT3;
+                
+                -- Check the SR ADD/SUB operation
+                if(FUNCT3 = "000" AND FUNCT7(5) = '1') then
+                    ALU_OP <= "001001";                
+                end if;
+                
+                -- Check the SR A/L operation
+                if(FUNCT3 = "101" AND IMM_I(10) = '1') then
+                    ALU_OP <= "001000";                
+                end if;
+            
+            WHEN LUI_OPCODE =>                               -- LUI 
+                -- Set OP Type as LUI type 
+                OP_TYPE <= "0001";
+                
+                -- Select IMM as first operand
+                OPERAND_0 <= IMM_U;
+            
+            WHEN AUIPC_OPCODE =>                               -- AUIPC
+                -- Set OP Type as branch type 
+                OP_TYPE <= "0010";
+                
+                -- Select the BRANCH operation (AUIPC)
+                BRANCH_OP <= "1000";
+                           
+                -- Select IMM as second operand
+                OPERAND_0 <= IMM_U;
         
-        if(OPCODE = "0010011") then                                -- OP-IMM
-            -- Set OP Type as ALU type 
-            OP_TYPE <= "0000";
+            WHEN JAL_OPCODE =>                               -- JAL
+                -- Set OP Type as branch type 
+                OP_TYPE <= "0010";
+                
+                -- Select the BRANCH operation (JAL)
+                BRANCH_OP <= "1001";
+                
+                -- Select IMM as second operand
+                OPERAND_0 <= IMM_U;
+            
+            WHEN JALR_OPCODE =>                               -- JALR
+                -- Check FUNCT3
+                if(FUNCT3 /= "000") then
+                    SIG_INVALID <= '1';
+                end if;
+                
+                -- Set OP Type as branch type 
+                OP_TYPE <= "0010";
+                
+                -- Select the BRANCH operation (JALR)
+                BRANCH_OP <= "1010";
+                
+                -- Select RS1 value as first operand
+                REG_RID1  <= RS1;
+                OPERAND_0 <= REG_RVAL1;
+                
+                -- Select IMM as second operand
+                OPERAND_1 <= IMM_I;
         
-            -- Select RS1 value as first operand
-            REG_RID1  <= RS1;
-            OPERAND_0 <= REG_RVAL1;
-            
-            -- Select IMM as second operand
-            OPERAND_1  <= IMM_I;
-            
-            -- Select the ALU operation
-            ALU_OP <= "000" & FUNCT3;
-            
-            -- Check the SR A/L operation
-            if(FUNCT3 = "101" AND IMM_I(10) = '1') then
-                ALU_OP <= "001000";                
-            end if;
-            
-        elsif(OPCODE = "0110011") then                             -- OP
-            -- Set OP Type as ALU type 
-            OP_TYPE <= "0000";
-        
-            -- Select RS1 value as first operand
-            REG_RID1  <= RS1;
-            OPERAND_0 <= REG_RVAL1;
-            
-            -- Select RS2 value as second operand
-            REG_RID2  <= RS2;
-            OPERAND_1 <= REG_RVAL2;
-            
-            -- Select the ALU operation
-            ALU_OP <= "000" & FUNCT3;
-            
-            -- Check the SR ADD/SUB operation
-            if(FUNCT3 = "000" AND FUNCT7(5) = '1') then
-                ALU_OP <= "001001";                
-            end if;
-            
-            -- Check the SR A/L operation
-            if(FUNCT3 = "101" AND IMM_I(10) = '1') then
-                ALU_OP <= "001000";                
-            end if;
-            
-        elsif(OPCODE = "0110111") then                             -- LUI 
-            -- Set OP Type as LUI type 
-            OP_TYPE <= "0001";
-            
-            -- Select IMM as first operand
-            OPERAND_0 <= IMM_U;
-            
-        elsif(OPCODE = "0010111") then                             -- AUIPC
-            -- Set OP Type as branch type 
-            OP_TYPE <= "0010";
-            
-            -- Select the BRANCH operation (AUIPC)
-            BRANCH_OP <= "1000";
-                       
-            -- Select IMM as second operand
-            OPERAND_0 <= IMM_U;
-        
-        elsif(OPCODE = "1101111") then                             -- JAL
-            -- Set OP Type as branch type 
-            OP_TYPE <= "0010";
-            
-            -- Select the BRANCH operation (JAL)
-            BRANCH_OP <= "1001";
-            
-            -- Select IMM as second operand
-            OPERAND_0 <= IMM_U;
-            
-        elsif(OPCODE = "1100111") then                             -- JALR
-            -- Set OP Type as branch type 
-            OP_TYPE <= "0010";
-            
-            -- Select the BRANCH operation (JALR)
-            BRANCH_OP <= "1010";
-            
-            -- Select RS1 value as first operand
-            REG_RID1  <= RS1;
-            OPERAND_0 <= REG_RVAL1;
-            
-            -- Select IMM as second operand
-            OPERAND_1 <= IMM_I;
-        
-        elsif(OPCODE = "1100111") then                             -- BRANCH
-            -- Set OP Type as branch type 
-            OP_TYPE <= "0010";
-            
-            -- Select the BRANCH operation
-            BRANCH_OP <= '0' & FUNCT3;
-            
-            -- Select RS1 value as first operand
-            REG_RID1  <= RS1;
-            OPERAND_0 <= REG_RVAL1;
-            
-            -- Select RS2 value as second operand
-            REG_RID1  <= RS2;
-            OPERAND_1 <= REG_RVAL2;
-            
-            -- Add the offset 
-            OPERAND_OFF <= IMM_B;
-        end if;
+            WHEN BRANCH_OPCODE =>                               -- BRANCH
+                -- Check FUNCT3
+                if(FUNCT3 = "010" OR FUNCT3 = "011") then
+                    SIG_INVALID <= '1';
+                end if;
+                            
+                -- Set OP Type as branch type 
+                OP_TYPE <= "0010";
+                
+                -- Select the BRANCH operation
+                BRANCH_OP <= '0' & FUNCT3;
+                
+                -- Select RS1 value as first operand
+                REG_RID1  <= RS1;
+                OPERAND_0 <= REG_RVAL1;
+                
+                -- Select RS2 value as second operand
+                REG_RID2  <= RS2;
+                OPERAND_1 <= REG_RVAL2;
+                
+                -- Add the offset 
+                OPERAND_OFF <= IMM_B;
+                
+            WHEN OTHERS =>
+                SIG_INVALID <= '1';
+        end case;
     
     end process DECODE_PROCESS;
 
