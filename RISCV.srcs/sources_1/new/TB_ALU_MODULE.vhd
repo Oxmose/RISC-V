@@ -93,7 +93,7 @@ begin
                 for i in 0 to 128 loop
                     OP1_D <= X"000000000000040D";
                     OP2_D <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP2_D'length));
-                    SEL_D <= "000001";
+                    SEL_D <= "001001";
                     wait for CLK_PERIOD / 256;
                     assert(VOUT_D = STD_LOGIC_VECTOR(SIGNED(OP1_D) - SIGNED(OP2_D)))
                     report("ERROR: SUB value incorect");
@@ -104,7 +104,7 @@ begin
                 wait for CLK_PERIOD / 10000000;
                 for i in 0 to 128 loop                    
                     OP2_D <= STD_LOGIC_VECTOR(UNSIGNED(OP2_D) + 1);
-                    SEL_D <= "000001";
+                    SEL_D <= "001001";
                     wait for CLK_PERIOD / 256;
                     assert(VOUT_D = STD_LOGIC_VECTOR(SIGNED(OP1_D) - SIGNED(OP2_D)))
                     report("ERROR: SUB value incorect");
@@ -182,7 +182,7 @@ begin
                 wait for CLK_PERIOD / 3;
                 assert(VOUT_D = X"00000000AAAAAAAA")
                 report("ERROR: AND value incorect");
-                SEL_D <= "000101";
+                SEL_D <= "000110";
                 wait for CLK_PERIOD / 3;
                 assert(VOUT_D = X"FFFFFFFFFFFFFFFF")
                 report("ERROR: OR value incorect");
@@ -195,7 +195,7 @@ begin
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 TEMP_SIG <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"0000000000000001";
-                SEL_D <= "000111";
+                SEL_D <= "000001";
                 for i in 0 to 64 loop
                     if(i = 0) then
                         OP2_D <= X"0000000000000000"; 
@@ -214,7 +214,7 @@ begin
                 end loop;
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "000111";
+                SEL_D <= "000001";
                 wait for CLK_PERIOD / 130;
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) sll 63))
                 report("ERROR: SLL value incorect");
@@ -222,7 +222,7 @@ begin
                 report("ERROR: SLL value incorect");
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000000E";
-                SEL_D <= "000111";
+                SEL_D <= "000001";
                 wait for CLK_PERIOD / 130;
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) sll 14))
                 report("ERROR: SLL value incorect");
@@ -233,7 +233,7 @@ begin
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"0000000000000001";
                 TEMP_SIG <= X"FFFFFFFFFFFFFFFF";
-                SEL_D <= "001000";
+                SEL_D <= "000101";
                 for i in 0 to 64 loop
                     if(i = 0) then
                         OP2_D <= X"0000000000000000"; 
@@ -252,7 +252,7 @@ begin
                 end loop;
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "001000";
+                SEL_D <= "000101";
                 wait for CLK_PERIOD / 130;
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) srl 63))
                 report("ERROR: SRL value incorect");
@@ -260,7 +260,7 @@ begin
                 report("ERROR: SRL value incorect");
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000000E";
-                SEL_D <= "001000";
+                SEL_D <= "000101";
                 wait for CLK_PERIOD / 130;
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) srl 14))
                 report("ERROR: SRL value incorect");    
@@ -271,7 +271,7 @@ begin
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"0000000000000001";
                 TEMP_SIG <= X"FFFFFFFFFFFFFFFF";
-                SEL_D <= "001001";
+                SEL_D <= "001000";
                 for i in 0 to 64 loop
                     if(i = 0) then
                         OP2_D <= X"0000000000000000"; 
@@ -288,7 +288,7 @@ begin
                 end loop;
                 OP1_D <= X"0FFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "001001";
+                SEL_D <= "001000";
                 wait for CLK_PERIOD / 66;
                 assert(VOUT_D = to_stdlogicvector(to_bitvector(OP1_D) sra 63))
                 report("ERROR: SRA value incorect 2");
@@ -296,7 +296,7 @@ begin
                 report("ERROR: SRA value incorect 3");
                 OP1_D <= X"FFFFFFFFFFFFFFFF";
                 OP2_D <= X"000000000000003F";
-                SEL_D <= "001001";
+                SEL_D <= "001000";
                 wait for CLK_PERIOD / 66;
                 assert(VOUT_D = X"FFFFFFFFFFFFFFFF")
                 report("ERROR: SRA value incorect 4");        
