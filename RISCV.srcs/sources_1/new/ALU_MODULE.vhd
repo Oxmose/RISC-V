@@ -38,8 +38,10 @@ end ALU_MODULE;
 architecture ALU_MODULE_FLOW of ALU_MODULE is
 
 -- Signals
-signal SLTI_RES : STD_LOGIC;
+signal SLTI_RES :  STD_LOGIC;
 signal SLTIU_RES : STD_LOGIC;
+signal EQ_RES :    STD_LOGIC;
+
 -- Constants
 
 begin
@@ -47,6 +49,9 @@ begin
     -- Compute SLTI
     SLTI_RES  <= '1' WHEN SIGNED(OP1) < SIGNED(OP2) ELSE '0';
     SLTIU_RES <= '1' WHEN UNSIGNED(OP1) < UNSIGNED(OP2) ELSE '0';
+    
+    -- Compute EQ
+    EQ_RES <= '1' WHEN OP1 = OP2 ELSE '0';
 
     WITH SEL SELECT VOUT <= 
         -- ADD
@@ -69,6 +74,8 @@ begin
         STD_LOGIC_VECTOR(SHIFT_RIGHT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "000101",
         -- SRA
         STD_LOGIC_VECTOR(SHIFT_RIGHT(SIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 downto 0))))) WHEN "001000",
+        -- EQ
+        X"000000000000000" & "000" & EQ_RES WHEN "001010",
         -- UNKNOWN
         (others => '1') WHEN OTHERS;
     
