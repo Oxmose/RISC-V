@@ -128,6 +128,6 @@ begin
        -- BGEU
        BGEU_RES WHEN "0111",
        -- UNKNOWN
-       (others => '1') WHEN OTHERS;
+       PC_IN WHEN OTHERS;
        
 end BRANCH_UNIT_MODULE_FLOW;
