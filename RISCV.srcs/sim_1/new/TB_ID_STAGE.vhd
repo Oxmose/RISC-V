@@ -37,7 +37,7 @@ component ID_STAGE is
            OPERAND_1 :        out STD_LOGIC_VECTOR(63 downto 0);
            OPERAND_OFF :      out STD_LOGIC_VECTOR(63 downto 0);
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
-           ALU_OP :           out STD_LOGIC_VECTOR(5 downto 0);
+           ALU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
            OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
            
@@ -57,7 +57,7 @@ signal OPERAND_0_D : STD_LOGIC_VECTOR(63 downto 0);
 signal OPERAND_1_D : STD_LOGIC_VECTOR(63 downto 0);
 signal OPERAND_OFF_D : STD_LOGIC_VECTOR(63 downto 0);
 signal RD_D : STD_LOGIC_VECTOR(4 downto 0);
-signal ALU_OP_D : STD_LOGIC_VECTOR(5 downto 0);
+signal ALU_OP_D : STD_LOGIC_VECTOR(3 downto 0);
 signal BRANCH_OP_D : STD_LOGIC_VECTOR(3 downto 0);
 signal OP_TYPE_D : STD_LOGIC_VECTOR(3 downto 0);
 
@@ -185,7 +185,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000000")
+            assert(ALU_OP_D = "0000")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             assert(OP_TYPE_D = "0000")
@@ -206,7 +206,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000010")
+            assert(ALU_OP_D = "0010")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- SLTUI
@@ -224,7 +224,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000011")
+            assert(ALU_OP_D = "0011")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- ANDI 
@@ -242,7 +242,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000111")
+            assert(ALU_OP_D = "0111")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- ORI 
@@ -260,7 +260,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000110")
+            assert(ALU_OP_D = "0110")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- XORI 
@@ -278,7 +278,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000100")
+            assert(ALU_OP_D = "0100")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- SLLI 
@@ -296,7 +296,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000001")
+            assert(ALU_OP_D = "0001")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- SRLI 
@@ -314,7 +314,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "100000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "000101")
+            assert(ALU_OP_D = "0101")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
             -- SRAI
@@ -333,7 +333,7 @@ begin
             assert(OPERAND_1_D = X"FFFFFFFFFFFFF" & "110000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
-            assert(ALU_OP_D = "001000")
+            assert(ALU_OP_D = "1000")
             report "ERROR: OP-IMM -> Wrong ALU_OP Value.";
             
          -- Test LUI Decode
@@ -389,7 +389,7 @@ begin
               assert(OPERAND_1_D = X"0000000000000011")
               report "ERROR: OP -> Wrong OP1 Value.";
               
-              assert(ALU_OP_D = "000000")
+              assert(ALU_OP_D = "0000")
               report "ERROR: OP -> Wrong ALU_OP Value.";
               
               assert(OP_TYPE_D = "0000")
@@ -415,7 +415,7 @@ begin
               assert(OPERAND_1_D = X"0000000000000011")
               report "ERROR: OP -> Wrong OP1 Value.";
             
-              assert(ALU_OP_D = "001001")
+              assert(ALU_OP_D = "1001")
               report "ERROR: OP -> Wrong ALU_OP Value.";
             
               assert(OP_TYPE_D = "0000")
@@ -440,7 +440,7 @@ begin
               assert(OPERAND_1_D = X"0000000000000011")
               report "ERROR: OP -> Wrong OP1 Value.";
              
-              assert(ALU_OP_D = "000010")
+              assert(ALU_OP_D = "0010")
               report "ERROR: OP -> Wrong ALU_OP Value.";
              
               assert(OP_TYPE_D = "0000")
@@ -464,7 +464,7 @@ begin
               assert(OPERAND_1_D = X"0000000000000011")
               report "ERROR: OP -> Wrong OP1 Value.";
                
-              assert(ALU_OP_D = "000011")
+              assert(ALU_OP_D = "0011")
               report "ERROR: OP -> Wrong ALU_OP Value.";
                
               assert(OP_TYPE_D = "0000")
@@ -488,7 +488,7 @@ begin
                 assert(OPERAND_1_D = X"0000000000000011")
                 report "ERROR: OP -> Wrong OP1 Value.";
                
-                assert(ALU_OP_D = "000111")
+                assert(ALU_OP_D = "0111")
                 report "ERROR: OP -> Wrong ALU_OP Value.";
                
                 assert(OP_TYPE_D = "0000")
@@ -512,7 +512,7 @@ begin
                 assert(OPERAND_1_D = X"0000000000000011")
                 report "ERROR: OP -> Wrong OP1 Value.";
                
-                assert(ALU_OP_D = "000110")
+                assert(ALU_OP_D = "0110")
                 report "ERROR: OP -> Wrong ALU_OP Value.";
                
                 assert(OP_TYPE_D = "0000")
@@ -536,7 +536,7 @@ begin
                 assert(OPERAND_1_D = X"0000000000000011")
                 report "ERROR: OP -> Wrong OP1 Value.";
                
-                assert(ALU_OP_D = "000100")
+                assert(ALU_OP_D = "0100")
                 report "ERROR: OP -> Wrong ALU_OP Value.";
                
                 assert(OP_TYPE_D = "0000")
@@ -560,7 +560,7 @@ begin
                 assert(OPERAND_1_D = X"0000000000000011")
                 report "ERROR: OP -> Wrong OP1 Value.";
                
-                assert(ALU_OP_D = "000001")
+                assert(ALU_OP_D = "0001")
                 report "ERROR: OP -> Wrong ALU_OP Value.";
                
                 assert(OP_TYPE_D = "0000")
@@ -584,7 +584,7 @@ begin
                 assert(OPERAND_1_D = X"0000000000000011")
                 report "ERROR: OP -> Wrong OP1 Value.";
                
-                assert(ALU_OP_D = "000101")
+                assert(ALU_OP_D = "0101")
                 report "ERROR: OP -> Wrong ALU_OP Value.";
                
                 assert(OP_TYPE_D = "0000")
@@ -609,7 +609,7 @@ begin
                 assert(OPERAND_1_D = X"0000000000000011")
                 report "ERROR: OP -> Wrong OP1 Value.";
                
-                assert(ALU_OP_D = "001000")
+                assert(ALU_OP_D = "1000")
                 report "ERROR: OP -> Wrong ALU_OP Value.";
                
                 assert(OP_TYPE_D = "0000")

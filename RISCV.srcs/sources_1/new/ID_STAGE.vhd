@@ -49,7 +49,7 @@ entity ID_STAGE is
            OPERAND_1 :        out STD_LOGIC_VECTOR(63 downto 0);
            OPERAND_OFF :      out STD_LOGIC_VECTOR(63 downto 0);
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
-           ALU_OP :           out STD_LOGIC_VECTOR(5 downto 0);
+           ALU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
            OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
            
@@ -164,11 +164,11 @@ begin
                 OPERAND_1  <= IMM_I;
                 
                 -- Select the ALU operation
-                ALU_OP <= "000" & FUNCT3;
+                ALU_OP <= '0' & FUNCT3;
                 
                 -- Check the SR A/L operation
                 if(FUNCT3 = "101" AND IMM_I(10) = '1') then
-                    ALU_OP <= "001000";                
+                    ALU_OP <= "1000";                
                 end if;
                 
             WHEN OP_OPCODE =>                                -- OP
@@ -193,16 +193,16 @@ begin
                 OPERAND_1 <= REG_RVAL2;
                 
                 -- Select the ALU operation
-                ALU_OP <= "000" & FUNCT3;
+                ALU_OP <= '0' & FUNCT3;
                 
                 -- Check the SR ADD/SUB operation
                 if(FUNCT3 = "000" AND FUNCT7(5) = '1') then
-                    ALU_OP <= "001001";                
+                    ALU_OP <= "1001";                
                 end if;
                 
                 -- Check the SR A/L operation
                 if(FUNCT3 = "101" AND IMM_I(10) = '1') then
-                    ALU_OP <= "001000";                
+                    ALU_OP <= "1000";                
                 end if;
             
             WHEN LUI_OPCODE =>                               -- LUI 
