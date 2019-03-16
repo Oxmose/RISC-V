@@ -11,12 +11,12 @@
 --              IN: 64 bits, OP1 the first operand.
 --              IN: 64 bits, OP2 the second operand.
 --              IN: 64 bits, OFF the offset to add to PC.
---              IN: 64 bits, RD_IN the current value of RD.
 --              IN: 64 bits, PC_IN the current value of PC.
 --              IN: 4 bits, SEL the branch operation selector.
 --              OUT: 64 bits, RD_OUT the output for RD.
 --              OUT: 64 bits, PC_OUT the output for PC.
 --              OUT: 1 bit, B_TABKEN is set to 1 when the branch is taken, 0 otherwise.
+--              OUT: 1 bit, RD_WRITE is set to 1 is RD must be rewriten.
 --              OUT: 1 bit, SIG_INVALID is set to 1 when the branch operation is invalid, 0 otherwise.
 --
 -- The values of SEL determine the BRANCH operation:
@@ -50,12 +50,12 @@ entity BRANCH_UNIT_MODULE is
     Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
            OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
            OFF :         in STD_LOGIC_VECTOR(63 downto 0);
-           RD_IN :       in STD_LOGIC_VECTOR(63 downto 0);
            PC_IN :       in STD_LOGIC_VECTOR(63 downto 0);
            SEL :         in STD_LOGIC_VECTOR(3 downto 0);
            RD_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
            PC_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
            B_TAKEN :     out STD_LOGIC;
+           RD_WRITE :    out STD_LOGIC;
            SIG_INVALID : out STD_LOGIC
     );
 end BRANCH_UNIT_MODULE;
@@ -105,7 +105,14 @@ begin
         -- JAL JALR
         STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + INSTRUCTION_WIDTH) WHEN "1001" | "1010",
         -- Others
-        RD_IN WHEN OTHERS;
+        X"0000000000000000" WHEN OTHERS;
+        
+    -- Set RD_WRITE
+    WITH SEL SELECT RD_WRITE <=
+        -- AUIPC JAL JALR
+        '1' WHEN "1000" | "1001" | "1010",
+        -- Others
+        '0' WHEN OTHERS;
 
     -- Operation selector
     WITH SEL SELECT NEXT_PC <= 

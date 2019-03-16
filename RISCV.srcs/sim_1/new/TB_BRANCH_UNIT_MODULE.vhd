@@ -32,12 +32,12 @@ component BRANCH_UNIT_MODULE is
     Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
            OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
            OFF :         in STD_LOGIC_VECTOR(63 downto 0);
-           RD_IN :       in STD_LOGIC_VECTOR(63 downto 0);
            PC_IN :       in STD_LOGIC_VECTOR(63 downto 0);
            SEL :         in STD_LOGIC_VECTOR(3 downto 0);
            RD_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
            PC_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
            B_TAKEN :     out STD_LOGIC;
+           RD_WRITE :    out STD_LOGIC;
            SIG_INVALID : out STD_LOGIC
     );
 end component;
@@ -45,12 +45,12 @@ end component;
 signal OP1_D :    STD_LOGIC_VECTOR(63 downto 0);
 signal OP2_D :    STD_LOGIC_VECTOR(63 downto 0);
 signal OFF_D :    STD_LOGIC_VECTOR(63 downto 0);
-signal RD_IN_D :  STD_LOGIC_VECTOR(63 downto 0);
 signal PC_IN_D :  STD_LOGIC_VECTOR(63 downto 0);
 signal SEL_D :    STD_LOGIC_VECTOR(3 downto 0);
 signal RD_OUT_D : STD_LOGIC_VECTOR(63 downto 0);
 signal PC_OUT_D : STD_LOGIC_VECTOR(63 downto 0);
 signal B_TAKEN_D :  STD_LOGIC;
+signal RD_WRITE_D :  STD_LOGIC;
 signal SIG_INVAL_D :  STD_LOGIC;
 
 signal NOTIFY: STD_LOGIC;
@@ -64,12 +64,12 @@ BU: BRANCH_UNIT_MODULE Port Map(
     OP1 => OP1_D,
     OP2 => OP2_D,
     OFF => OFF_D,
-    RD_IN => RD_IN_D,
     PC_IN => PC_IN_D,
     SEL => SEL_D,
     RD_OUT => RD_OUT_D,
     PC_OUT => PC_OUT_D,
     B_TAKEN => B_TAKEN_D,
+    RD_WRITE => RD_WRITE_D,
     SIG_INVALID => SIG_INVAL_D
 );
 
@@ -82,7 +82,6 @@ begin
            PC_IN_D <= x"0000000000000004";
            OP1_D  <= x"0000000000000100";
            OFF_D <= X"0000000000000010";
-           RD_IN_D <= X"00000000000FE450";
            NOTIFY <= '0';
            wait for CLK_PERIOD;
         -- AUIPC
@@ -99,6 +98,9 @@ begin
             
             assert(RD_OUT_D = X"0000000000000014")
             report "ERROR: AUIPC -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '1')
+            report "ERROR: AUIPC -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: AUIPC -> Wrong BRANCH_TAKEN Value.";
@@ -118,6 +120,9 @@ begin
             assert(RD_OUT_D = X"0000000000000008")
             report "ERROR: JAL -> Wrong RD Value.";
             
+            assert(RD_WRITE_D = '1')
+            report "ERROR: JAL -> Wrong RD_WRITE_D Value.";
+            
             assert(B_TAKEN_D = '1')
             report "ERROR: JAL -> Wrong BRANCH_TAKEN Value.";
         -- JALR
@@ -135,6 +140,9 @@ begin
             assert(RD_OUT_D = X"0000000000000008")
             report "ERROR: JALR -> Wrong RD Value.";
             
+            assert(RD_WRITE_D = '1')
+            report "ERROR: JALR -> Wrong RD_WRITE_D Value.";
+            
             assert(B_TAKEN_D = '1')
             report "ERROR: JALR -> Wrong BRANCH_TAKEN Value.";
         -- BEQ
@@ -151,8 +159,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BEQ -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BEQ -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BEQ -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BEQ -> Wrong BRANCH_TAKEN Value.";
@@ -167,8 +178,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BEQ -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BEQ -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BEQ -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BEQ -> Wrong BRANCH_TAKEN Value.";
@@ -187,8 +201,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BNE -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BNE -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BNE -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BNE -> Wrong BRANCH_TAKEN Value.";
@@ -203,8 +220,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BNE -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BNE -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BNE -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BNE -> Wrong BRANCH_TAKEN Value.";
@@ -223,8 +243,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BLT -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLT -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLT -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BLT -> Wrong BRANCH_TAKEN Value.";
@@ -239,8 +262,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BLT -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLT -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLT -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BLT -> Wrong BRANCH_TAKEN Value.";
@@ -255,8 +281,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BLT -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLT -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLT -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BLT -> Wrong BRANCH_TAKEN Value.";
@@ -271,8 +300,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BLT -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLT -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLT -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BLT -> Wrong BRANCH_TAKEN Value.";
@@ -290,8 +322,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BGE -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BGE -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGE -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BGE -> Wrong BRANCH_TAKEN Value.";
@@ -306,8 +341,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BGE -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BGE -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGE -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BGE -> Wrong BRANCH_TAKEN Value.";
@@ -322,8 +360,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BGE -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BGE -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGE -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BGE -> Wrong BRANCH_TAKEN Value.";
@@ -338,8 +379,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BGE -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BGE -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGE -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BGE -> Wrong BRANCH_TAKEN Value.";
@@ -357,8 +401,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BLTU -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLTU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLTU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BLTU -> Wrong BRANCH_TAKEN Value.";
@@ -373,8 +420,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BLTU -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLTU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLTUEQ -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BLTU -> Wrong BRANCH_TAKEN Value.";
@@ -389,8 +439,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BLTU -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLTU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLTU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BLTU -> Wrong BRANCH_TAKEN Value.";
@@ -405,8 +458,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BLTU -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: BLTU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BLTU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BLTU -> Wrong BRANCH_TAKEN Value.";
@@ -424,8 +480,11 @@ begin
             assert(PC_OUT_D = X"0000000000000004")
             report "ERROR: BGEU0 -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
-            report "ERROR: BGEU0 -> Wrong RD Value.";
+            assert(RD_OUT_D = X"0000000000000000")
+            report "ERROR: BGEU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGEU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: BGEU0 -> Wrong BRANCH_TAKEN Value.";
@@ -440,8 +499,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BGEU1 -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
-            report "ERROR: BGEU1 -> Wrong RD Value.";
+            assert(RD_OUT_D = X"0000000000000000")
+            report "ERROR: BGEU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGEU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BGEU1 -> Wrong BRANCH_TAKEN Value.";
@@ -456,8 +518,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BGEU2 -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
-            report "ERROR: BGEU2 -> Wrong RD Value.";
+            assert(RD_OUT_D = X"0000000000000000")
+            report "ERROR: BGEU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGEU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BGEU2 -> Wrong BRANCH_TAKEN Value.";
@@ -472,8 +537,11 @@ begin
             assert(PC_OUT_D = X"0000000000000024")
             report "ERROR: BGEU3 -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
-            report "ERROR: BGEU3 -> Wrong RD Value.";
+            assert(RD_OUT_D = X"0000000000000000")
+            report "ERROR: BGEU -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: BGEU -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '1')
             report "ERROR: BGEU3 -> Wrong BRANCH_TAKEN Value."; 
@@ -489,8 +557,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
@@ -504,8 +575,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
@@ -519,8 +593,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
@@ -534,8 +611,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
@@ -549,8 +629,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
@@ -564,8 +647,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
@@ -579,8 +665,11 @@ begin
             assert(PC_OUT_D = PC_IN_D)
             report "ERROR: INVAL -> Wrong PC Value.";
             
-            assert(RD_OUT_D = RD_IN_D)
+            assert(RD_OUT_D = X"0000000000000000")
             report "ERROR: INVAL -> Wrong RD Value.";
+            
+            assert(RD_WRITE_D = '0')
+            report "ERROR: INVAL -> Wrong RD_WRITE_D Value.";
             
             assert(B_TAKEN_D = '0')
             report "ERROR: INVAL -> Wrong BRANCH_TAKEN Value.";
