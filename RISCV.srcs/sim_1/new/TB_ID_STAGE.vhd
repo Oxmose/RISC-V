@@ -39,8 +39,8 @@ component ID_STAGE is
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
            ALU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
-           OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
            LSU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
+           OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
            
            REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
            REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
@@ -843,8 +843,8 @@ begin
                     assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
                     report "ERROR: LOAD -> Wrong OP0 Value.";
                     
-                    assert(OPERAND_OFF_D = X"000000000000" & "0000000001001011")
-                    report "ERROR: LOAD -> Wrong OP_OFF Value.";
+                    assert(OPERAND_1_D = X"000000000000" & "0000000001001011")
+                    report "ERROR: LOAD -> Wrong OP_1 Value.";
                 
                 end if;
             end loop;

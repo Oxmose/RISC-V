@@ -52,8 +52,8 @@ entity ID_STAGE is
            RD :               out STD_LOGIC_VECTOR(4 downto 0);
            ALU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
-           OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
            LSU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
+           OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);           
            
            REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
            REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
@@ -301,7 +301,7 @@ begin
                 OPERAND_0 <= REG_RVAL1;
                 
                 -- Set the IMM value as offset
-                OPERAND_OFF <= IMM_I;
+                OPERAND_1 <= IMM_I;
 
                 -- Select the LSU operation Load
                 LSU_OP <= '0' & FUNCT3;
