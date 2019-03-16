@@ -40,6 +40,7 @@ component ID_STAGE is
            ALU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
            OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
+           LSU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            
            REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
            REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
@@ -60,6 +61,7 @@ signal RD_D : STD_LOGIC_VECTOR(4 downto 0);
 signal ALU_OP_D : STD_LOGIC_VECTOR(3 downto 0);
 signal BRANCH_OP_D : STD_LOGIC_VECTOR(3 downto 0);
 signal OP_TYPE_D : STD_LOGIC_VECTOR(3 downto 0);
+signal LSU_OP_D: STD_LOGIC_VECTOR(3 downto 0);
 
 signal REG_VAL1_D : STD_LOGIC_VECTOR(63 downto 0);
 signal REG_VAL2_D : STD_LOGIC_VECTOR(63 downto 0);
@@ -83,6 +85,8 @@ constant AUIPC_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0010111";
 constant JAL_OPCODE    : STD_LOGIC_VECTOR(6 downto 0) := "1101111";
 constant JALR_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "1100111"; 
 constant BRANCH_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
+constant LOAD_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "0000011";
+constant STORE_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0100011";
 
 begin
     
@@ -100,6 +104,7 @@ begin
         ALU_OP => ALU_OP_D,
         BRANCH_OP => BRANCH_OP_D,
         OP_TYPE => OP_TYPE_D,
+        LSU_OP => LSU_OP_D,
         
         REG_RID1 => REG_RID1_D,
         REG_RID2 => REG_RID2_D,
@@ -145,7 +150,9 @@ begin
                       OP_DATA(6 downto 0) = AUIPC_OPCODE OR
                       OP_DATA(6 downto 0) = JAL_OPCODE OR
                       OP_DATA(6 downto 0) = JALR_OPCODE OR                      
-                      OP_DATA(6 downto 0) = BRANCH_OPCODE ) then
+                      OP_DATA(6 downto 0) = BRANCH_OPCODE OR                      
+                      OP_DATA(6 downto 0) = LOAD_OPCODE OR                      
+                      OP_DATA(6 downto 0) = STORE_OPCODE  ) then
                     assert(SIG_INVALID_D = '0')
                     report "ERROR: SIG_INVALID detected.";
                       
@@ -809,13 +816,81 @@ begin
             
             assert(BRANCH_OP_D = "0111")
             report "ERROR: BGEU -> Wring BRANCH_OP Value.";
+            
+        -- Test LOAD Decode 
+        elsif(COUNTER < 11) then
+        
+            for i in 0 to 5 loop
+                INSTRUCTION_DATA_D <= X"00000000" & "000001001011" & "01011" & STD_LOGIC_VECTOR(TO_UNSIGNED(i, INSTRUCTION_DATA_D(2 downto 0)'length)) & "11010" & "0000011";
+                wait for CLK_PERIOD / 6;
+                if(i /= 3) then               
+                    
+                    assert(RD_D = "11010")
+                    report "ERROR: LOAD -> Wrong RD Value.";
+                    
+                    assert(OP_TYPE_D = "0100")
+                    report "ERROR: LOAD -> Wrong OP_TYPE Value.";
+                    
+                    assert(ALU_OP_D = "0000")
+                    report "ERROR: LOAD -> Wrong ALU_OP Value.";
+                    
+                    assert(REG_RID1_D = "01011")
+                    report "ERROR: LOAD -> Wrong RS1 Value.";
+                    
+                    assert(LSU_OP_D = STD_LOGIC_VECTOR(TO_UNSIGNED(i, INSTRUCTION_DATA_D(3 downto 0)'length)))
+                    report "ERROR: LOAD -> Wrong LSU_OP Value.";
+                  
+                    assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                    report "ERROR: LOAD -> Wrong OP0 Value.";
+                    
+                    assert(OPERAND_OFF_D = X"000000000000" & "0000000001001011")
+                    report "ERROR: LOAD -> Wrong OP_OFF Value.";
+                
+                end if;
+            end loop;
+            
+            
+        -- Test STORE Decode
+        elsif(COUNTER < 12) then
+            for i in 0 to 2 loop
+                INSTRUCTION_DATA_D <= X"00000000" & "0000010" & "01101" & "01011" &                 
+                    STD_LOGIC_VECTOR(TO_UNSIGNED(i, INSTRUCTION_DATA_D(2 downto 0)'length)) & 
+                    "11010" & "0100011";
+                
+                wait for CLK_PERIOD / 3;
+                                
+                assert(OP_TYPE_D = "0101")
+                report "ERROR: STORE -> Wrong OP_TYPE Value.";
+                
+                assert(ALU_OP_D = "0000")
+                report "ERROR: STORE -> Wrong ALU_OP Value.";
+                
+                assert(REG_RID1_D = "01011")
+                report "ERROR: STORE -> Wrong RS1 Value.";
+                
+                assert(REG_RID2_D = "01101")
+                report "ERROR: STORE -> Wrong RS2 Value.";
+                
+                assert(LSU_OP_D = '1' & STD_LOGIC_VECTOR(TO_UNSIGNED(i, INSTRUCTION_DATA_D(2 downto 0)'length)))
+                report "ERROR: STORE -> Wrong LSU_OP Value.";
+              
+                assert(OPERAND_0_D = X"0F0F0F0F0F0F0F0F")
+                report "ERROR: STORE -> Wrong OP0 Value.";
+                
+                assert(OPERAND_1_D = X"00000000000000"& "01011010")
+                report "ERROR: STORE -> Wrong OP1 Value.";
+                
+                assert(OPERAND_OFF_D = X"0000000000000011")
+                report "ERROR: STORE -> Wrong OP_OFF Value.";
+            end loop;
+        
         -- Test INVLID FUNCT Decode 
-        elsif(COUNTER < 11) then        
+        elsif(COUNTER < 13) then        
             -- OP
             INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "0110011"; 
             for i in 0 to 127 loop
                 INSTRUCTION_DATA_D(31 downto 25) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 7));
-                wait for CLK_PERIOD / 272;
+                wait for CLK_PERIOD / 288;
                 if(i = 0) then
                     assert(SIG_INVALID_D = '0')
                     report "ERROR: INVALID0 -> Wring SIG_INVALID Value."; 
@@ -830,7 +905,7 @@ begin
             INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "101" & "00101" & "0110011"; 
             for i in 0 to 127 loop
                 INSTRUCTION_DATA_D(31 downto 25) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 7));
-                wait for CLK_PERIOD / 272;
+                wait for CLK_PERIOD / 288;
                 if(i = 0) then
                     assert(SIG_INVALID_D = '0')
                     report "ERROR: INVALID3 -> Wring SIG_INVALID Value."; 
@@ -846,7 +921,7 @@ begin
             INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "1100111"; 
             for i in 0 to 7 loop
                 INSTRUCTION_DATA_D(14 downto 12) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3));
-                wait for CLK_PERIOD / 272;
+                wait for CLK_PERIOD / 288;
                 if(i = 0) then
                     assert(SIG_INVALID_D = '0')
                     report "ERROR: INVALID6 -> Wring SIG_INVALID Value."; 
@@ -859,13 +934,41 @@ begin
             INSTRUCTION_DATA_D <= X"00000000" & "0000000" & "10101" & "00011" &  "000" & "00101" & "1100011"; 
             for i in 0 to 7 loop
                 INSTRUCTION_DATA_D(14 downto 12) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3));
-                wait for CLK_PERIOD / 272;
+                wait for CLK_PERIOD / 288;
                 if(i = 2 or i = 3) then
                     assert(SIG_INVALID_D = '1')
                     report "ERROR: INVALID8 -> Wring SIG_INVALID Value."; 
                 else 
                     assert(SIG_INVALID_D = '0')
                     report "ERROR: INVALID9 -> Wring SIG_INVALID Value."; 
+                end if;
+            end loop;
+            
+            
+            -- LOAD
+            INSTRUCTION_DATA_D <= X"00000000" & "000001001011" & "01011" & "000" & "11010" & "0000011";
+            for i in 0 to 7 loop
+                INSTRUCTION_DATA_D(14 downto 12) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3));
+                wait for CLK_PERIOD / 288;
+                if(i = 3 or i > 5) then
+                    assert(SIG_INVALID_D = '1')
+                    report "ERROR: INVALID10 -> Wring SIG_INVALID Value."; 
+                else 
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID11 -> Wring SIG_INVALID Value."; 
+                end if;
+            end loop;
+            -- STORE
+            INSTRUCTION_DATA_D <= X"00000000" & "000001001011" & "01011" & "000" & "11010" & "0100011";
+            for i in 0 to 7 loop
+                INSTRUCTION_DATA_D(14 downto 12) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3));
+                wait for CLK_PERIOD / 288;
+                if(i > 2) then
+                    assert(SIG_INVALID_D = '1')
+                    report "ERROR: INVALID12 -> Wring SIG_INVALID Value."; 
+                else 
+                    assert(SIG_INVALID_D = '0')
+                    report "ERROR: INVALID13 -> Wring SIG_INVALID Value."; 
                 end if;
             end loop;
                               

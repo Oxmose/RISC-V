@@ -21,6 +21,7 @@
 --              OUT: 4 bits, ALU_OP the ALU operation to be executed.
 --              OUT: 4 bits, BRANCH_OP the BRANCH operation to be executed.
 --              OUT: 4 bits, OP_TYPE the operation type to be executed.
+--              OUT: 4 bits, LSU_OP the memory operation to be executed.
 --              OUT: 5 bits, REG_RID1 the register id for RS1. 
 --              OUT: 5 bits, REG_RID2 the register id for RS2. 
 --              OUT: 1 bit, SIG_INVALID the instruction invalid exception signal.
@@ -52,6 +53,7 @@ entity ID_STAGE is
            ALU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            BRANCH_OP :        out STD_LOGIC_VECTOR(3 downto 0);
            OP_TYPE :          out STD_LOGIC_VECTOR(3 downto 0);
+           LSU_OP :           out STD_LOGIC_VECTOR(3 downto 0);
            
            REG_RID1 :         out STD_LOGIC_VECTOR(4 downto 0);
            REG_RID2 :         out STD_LOGIC_VECTOR(4 downto 0);
@@ -83,6 +85,14 @@ constant AUIPC_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0010111";
 constant JAL_OPCODE    : STD_LOGIC_VECTOR(6 downto 0) := "1101111";
 constant JALR_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "1100111"; 
 constant BRANCH_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
+constant LOAD_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0000011";
+constant STORE_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "0100011";
+
+constant OP_TYPE_ALU    : STD_LOGIC_VECTOR(3 downto 0) := "0000";
+constant OP_TYPE_LUI    : STD_LOGIC_VECTOR(3 downto 0) := "0001";
+constant OP_TYPE_BRANCH : STD_LOGIC_VECTOR(3 downto 0) := "0010";
+constant OP_TYPE_LOAD   : STD_LOGIC_VECTOR(3 downto 0) := "0100";
+constant OP_TYPE_STORE  : STD_LOGIC_VECTOR(3 downto 0) := "0101";
 
 -- Components 
 
@@ -154,7 +164,7 @@ begin
         CASE OPCODE IS
             WHEN OP_IMM_OPCODE =>                                -- OP-IMM      
                 -- Set OP Type as ALU type 
-                OP_TYPE <= "0000";
+                OP_TYPE <= OP_TYPE_ALU;
             
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
@@ -182,7 +192,7 @@ begin
                 end if;
             
                 -- Set OP Type as ALU type 
-                OP_TYPE <= "0000";
+                OP_TYPE <= OP_TYPE_ALU;
             
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
@@ -207,14 +217,14 @@ begin
             
             WHEN LUI_OPCODE =>                               -- LUI 
                 -- Set OP Type as LUI type 
-                OP_TYPE <= "0001";
+                OP_TYPE <= OP_TYPE_LUI;
                 
                 -- Select IMM as first operand
                 OPERAND_0 <= IMM_U;
             
             WHEN AUIPC_OPCODE =>                               -- AUIPC
                 -- Set OP Type as branch type 
-                OP_TYPE <= "0010";
+                OP_TYPE <= OP_TYPE_BRANCH;
                 
                 -- Select the BRANCH operation (AUIPC)
                 BRANCH_OP <= "1000";
@@ -224,7 +234,7 @@ begin
         
             WHEN JAL_OPCODE =>                               -- JAL
                 -- Set OP Type as branch type 
-                OP_TYPE <= "0010";
+                OP_TYPE <= OP_TYPE_BRANCH;
                 
                 -- Select the BRANCH operation (JAL)
                 BRANCH_OP <= "1001";
@@ -239,7 +249,7 @@ begin
                 end if;
                 
                 -- Set OP Type as branch type 
-                OP_TYPE <= "0010";
+                OP_TYPE <= OP_TYPE_BRANCH;
                 
                 -- Select the BRANCH operation (JALR)
                 BRANCH_OP <= "1010";
@@ -258,7 +268,7 @@ begin
                 end if;
                             
                 -- Set OP Type as branch type 
-                OP_TYPE <= "0010";
+                OP_TYPE <= OP_TYPE_BRANCH;
                 
                 -- Select the BRANCH operation
                 BRANCH_OP <= '0' & FUNCT3;
@@ -273,6 +283,54 @@ begin
                 
                 -- Add the offset 
                 OPERAND_OFF <= IMM_B;
+            
+            WHEN LOAD_OPCODE =>                              -- LOAD
+                -- Check FUNCT3
+                if(FUNCT3 = "011" OR FUNCT3 > "101") then
+                    SIG_INVALID <= '1';
+                end if;
+                
+                -- Set OP Type as load type
+                OP_TYPE <= OP_TYPE_LOAD;
+                
+                -- Select the ALU operation ADD
+                ALU_OP <= "0000"; 
+                
+                -- Set RS1 value as first operand
+                REG_RID1  <= RS1;
+                OPERAND_0 <= REG_RVAL1;
+                
+                -- Set the IMM value as offset
+                OPERAND_OFF <= IMM_I;
+
+                -- Select the LSU operation Load
+                LSU_OP <= '0' & FUNCT3;
+                
+             WHEN STORE_OPCODE =>                              -- STORE
+               -- Check FUNCT3
+               if(FUNCT3 > "010") then
+                   SIG_INVALID <= '1';
+               end if;
+               
+               -- Set OP Type as store type
+               OP_TYPE <= OP_TYPE_STORE;
+               
+               -- Set RS1 value as first operand
+               REG_RID1  <= RS1;
+               OPERAND_0 <= REG_RVAL1;
+               
+               -- Set the IMM value second operand
+               OPERAND_1 <= IMM_S;
+               
+               -- Set RS2 value as value to store
+               REG_RID2  <= RS2;
+               OPERAND_OFF <= REG_RVAL2;
+               
+               -- Select the ALU operation ADD
+               ALU_OP <= "0000";                
+               
+               -- Select the LSU operation store
+               LSU_OP <= '1' & FUNCT3;
                 
             WHEN OTHERS =>
                 SIG_INVALID <= '1';
