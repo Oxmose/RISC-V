@@ -31,7 +31,8 @@ entity REGISTER_32B is
            RST : in STD_LOGIC;
            EN :  in STD_LOGIC;
            D :   in STD_LOGIC_VECTOR (31 downto 0);
-           Q :   out STD_LOGIC_VECTOR (31 downto 0));
+           Q :   out STD_LOGIC_VECTOR (31 downto 0)
+    );
 end REGISTER_32B;
 
 architecture REGISTER_32B_BEHAVIOR of REGISTER_32B is

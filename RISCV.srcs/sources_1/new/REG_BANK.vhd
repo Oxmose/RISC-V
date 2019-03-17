@@ -42,7 +42,8 @@ entity REG_BANK is
            WRID :   in STD_LOGIC_VECTOR (4 downto 0);  
            RWVAL :  in STD_LOGIC_VECTOR (63 downto 0);
            RRVAL1 : OUT STD_LOGIC_VECTOR (63 downto 0);
-           RRVAL2 : OUT STD_LOGIC_VECTOR (63 downto 0));          
+           RRVAL2 : OUT STD_LOGIC_VECTOR (63 downto 0)
+    );          
 end REG_BANK;
 
 architecture REG_BANK_FLOW of REG_BANK is

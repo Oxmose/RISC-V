@@ -43,7 +43,8 @@ entity IF_STAGE is
            INST_MEM_DATA :  in STD_LOGIC_VECTOR (63 downto 0);
            PC :             out STD_LOGIC_VECTOR (63 downto 0);
            INSTRUCTION :    out STD_LOGIC_VECTOR (63 downto 0);
-           SIG_ALIGN:       out STD_LOGIC);
+           SIG_ALIGN:       out STD_LOGIC
+    );
 end IF_STAGE;
 
 architecture IF_STAGE_BEHAVE of IF_STAGE is

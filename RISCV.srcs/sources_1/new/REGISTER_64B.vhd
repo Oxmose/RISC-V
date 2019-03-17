@@ -31,7 +31,8 @@ entity REGISTER_64B is
            RST : in STD_LOGIC;
            EN :  in STD_LOGIC;
            D :   in STD_LOGIC_VECTOR (63 downto 0);
-           Q :   out STD_LOGIC_VECTOR (63 downto 0));
+           Q :   out STD_LOGIC_VECTOR (63 downto 0)
+    );
 end REGISTER_64B;
 
 architecture REGISTER_64B_BEHAVIOR of REGISTER_64B is
