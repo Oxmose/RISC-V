@@ -43,6 +43,7 @@ end MEM_STAGE;
 architecture MEM_STAGE_BEHAVE of MEM_STAGE is
 
 -- Signals
+signal INVALID_REQ : STD_LOGIC := '0';
 
 -- Constants
 constant OP_TYPE_LOAD   : STD_LOGIC_VECTOR(3 downto 0) := "0100";
@@ -60,6 +61,9 @@ constant LSU_TYPE_SW :  STD_LOGIC_VECTOR(3 downto 0) := "1010";
 
 begin
 
+    -- Link internal invalid signal to output 
+    SIG_INVALID <= INVALID_REQ;
+
     -- Load / Store process
     LSU_PROC : process(OP_TYPE, LSU_OP, MEM_ADDR_IN, DATA_OPERAND_IN)
     begin
@@ -69,42 +73,24 @@ begin
                 WHEN LSU_TYPE_LB => 
                     DATA_OPERAND_OUT(7 downto 0)  <= MEM_LINK_VALUE(7 downto 0);
                     DATA_OPERAND_OUT(63 downto 8) <= (others => MEM_LINK_VALUE(7));
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '0';
-                    MEM_LINK_REQ      <= '1';
                 WHEN LSU_TYPE_LH => 
                     DATA_OPERAND_OUT(15 downto 0)  <= MEM_LINK_VALUE(15 downto 0);
                     DATA_OPERAND_OUT(63 downto 16) <= (others => MEM_LINK_VALUE(15));
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '0';
-                    MEM_LINK_REQ      <= '1';
                 WHEN LSU_TYPE_LW =>                     
                     DATA_OPERAND_OUT(31 downto 0)  <= MEM_LINK_VALUE(31 downto 0);
                     -- TODO Change that when in 64 bits
                     DATA_OPERAND_OUT(63 downto 32) <= (others => '0');
                     --DATA_OPERAND_OUT(63 downto 32) <= (others => MEM_LINK_VALUE(31));
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '0';
-                    MEM_LINK_REQ      <= '1';
                 WHEN LSU_TYPE_LBU => 
-                    DATA_OPERAND_OUT <= MEM_LINK_VALUE AND X"00000000000000FF";
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '0';
-                    MEM_LINK_REQ      <= '1';  
+                    DATA_OPERAND_OUT <= MEM_LINK_VALUE AND X"00000000000000FF"; 
                 WHEN LSU_TYPE_LHU => 
-                    DATA_OPERAND_OUT <= MEM_LINK_VALUE AND X"000000000000FFFF";
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '0';
-                    MEM_LINK_REQ      <= '1'; 
+                    DATA_OPERAND_OUT <= MEM_LINK_VALUE AND X"000000000000FFFF";                    
                 WHEN OTHERS =>
                     -- INVALID operation
-                    SIG_INVALID <= '1';
+                    INVALID_REQ <= '1';
             END CASE;
+            -- Set request type
+            MEM_LINK_REQ_TYPE <= '0';
             
         elsif(OP_TYPE = OP_TYPE_STORE) then
             -- Check validity and send data
@@ -112,37 +98,30 @@ begin
                 WHEN LSU_TYPE_SB => 
                     MEM_LINK_VALUE(7 downto 0)  <= DATA_OPERAND_IN(7 downto 0);
                     MEM_LINK_VALUE(63 downto 8) <= (others => '0');
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '1';
-                    MEM_LINK_REQ      <= '1';
                     MEM_LINK_SIZE     <= "00";
                 WHEN LSU_TYPE_SH => 
                     MEM_LINK_VALUE(15 downto 0)  <= DATA_OPERAND_IN(15 downto 0);
                     MEM_LINK_VALUE(63 downto 16) <= (others => '0');
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '1';
-                    MEM_LINK_REQ      <= '1';
                     MEM_LINK_SIZE     <= "01";
                 WHEN LSU_TYPE_SW =>                     
                     MEM_LINK_VALUE(31 downto 0)  <= DATA_OPERAND_IN(31 downto 0);
-                    MEM_LINK_VALUE(63 downto 32) <= (others => '0');
-                    -- Init request 
-                    MEM_LINK_ADDR     <= MEM_ADDR_IN;
-                    MEM_LINK_REQ_TYPE <= '1';
-                    MEM_LINK_REQ      <= '1';  
+                    MEM_LINK_VALUE(63 downto 32) <= (others => '0');                
                     MEM_LINK_SIZE     <= "10";           
                 WHEN OTHERS =>
                     -- INVALID operation
-                    SIG_INVALID <= '1';
+                    INVALID_REQ <= '1';
             END CASE;
+           -- Set request type 
+           MEM_LINK_REQ_TYPE <= '1'; 
         else
             -- Do not init request 
             MEM_LINK_REQ <= '0';
             -- Just copy the value
             DATA_OPERAND_OUT <= DATA_OPERAND_IN;
         end if;
+        
+        MEM_LINK_ADDR <= MEM_ADDR_IN;
+        MEM_LINK_REQ  <= '1' AND NOT INVALID_REQ; 
     end process LSU_PROC;
 
 end MEM_STAGE_BEHAVE;
