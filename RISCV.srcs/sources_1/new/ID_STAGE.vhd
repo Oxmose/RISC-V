@@ -11,7 +11,6 @@
 --              This stage decodes the instruction.The instruction is split in different
 --              parts that are used in the next stages.
 --              IN: 64 bits, INSTRUCTION_DATA the data to decode.
---              IN: 64 bits, PC the current PC value.
 --              IN: 64 bits, REG_RVAL1 the value or the first register requested in the register file.
 --              IN: 64 bits, REG_RVAL2 the value or the second register requested in the register file.
 --              OUT: 64 bits, OPERAND_0 the value of the first operand of the instruction.
@@ -40,7 +39,6 @@ USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY ID_STAGE IS 
     PORT ( INSTRUCTION_DATA : IN STD_LOGIC_VECTOR(63 DOWNTO 0); 
-           PC :               IN STD_LOGIC_VECTOR(63 DOWNTO 0);
            
            REG_RVAL1 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);
            REG_RVAL2 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -158,12 +156,22 @@ BEGIN
      IMM_J(63 DOWNTO 20) <= (OTHERS => INSTRUCTION_DATA(31));
                
     -- Manage OPCODE
-    DECODE_PROCESS: PROCESS(INSTRUCTION_DATA, OPCODE, PC,
+    DECODE_PROCESS: PROCESS(INSTRUCTION_DATA, OPCODE,
                             RS1, REG_RVAL1, RS2, REG_RVAL2, 
                             FUNCT3, FUNCT7, 
                             IMM_I, IMM_S, IMM_B, IMM_U, IMM_J)
     BEGIN 
         SIG_INVALID <= '0';
+        OPERAND_0   <= (OTHERS => '0');
+        OPERAND_1   <= (OTHERS => '0');
+        OPERAND_OFF <= (OTHERS => '0');
+        ALU_OP      <= (OTHERS => '0');
+        BRANCH_OP   <= (OTHERS => '0');
+        LSU_OP      <= (OTHERS => '0');
+        OP_TYPE     <= (OTHERS => '0');
+        REG_RID1    <= (OTHERS => '0');
+        REG_RID2    <= (OTHERS => '0');
+        
         CASE OPCODE IS
             WHEN OP_IMM_OPCODE =>                                -- OP-IMM      
                 -- Set OP Type as ALU type 

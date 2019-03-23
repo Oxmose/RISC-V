@@ -62,7 +62,7 @@ SIGNAL INTERNAL_BANK : INT_BANK;
 
 BEGIN
     -- Write selector
-    WR_SEL: PROCESS(CLK, RST)
+    WR_SEL: PROCESS(CLK, RST, WRITE)
     BEGIN
         IF(RST = '1') THEN
             FOR i IN 0 TO 31 LOOP

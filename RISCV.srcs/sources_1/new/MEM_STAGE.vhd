@@ -113,7 +113,7 @@ BEGIN
                      '0';    
 
     -- Data retreive process
-    LOAD_PROC : PROCESS(OP_TYPE, DATA_OPERAND_IN, MEM_LINK_VALUE_IN)
+    LOAD_PROC : PROCESS(OP_TYPE, LSU_OP, DATA_OPERAND_IN, MEM_LINK_VALUE_IN)
     BEGIN
         IF(OP_TYPE = OP_TYPE_LOAD) THEN
             CASE LSU_OP IS
@@ -150,7 +150,11 @@ BEGIN
     -- Load / Store process
     LSU_PROC : PROCESS(OP_TYPE, LSU_OP, MEM_ADDR_IN, DATA_OPERAND_IN)
     BEGIN
-        INVALID_REQ <= '0';
+        MEM_LINK_REQ_TYPE  <= '0';
+        INVALID_REQ        <= '0';
+        MEM_LINK_SIZE      <= "00";
+        MEM_LINK_VALUE_OUT <= (OTHERS => '0');
+        
         IF(OP_TYPE = OP_TYPE_LOAD) THEN
             -- Check validity and send data
             CASE LSU_OP IS
@@ -175,7 +179,7 @@ BEGIN
             -- Set request type
             MEM_LINK_REQ_TYPE <= '0';
             
-        ELSIF(OP_TYPE = OP_TYPE_STORE) THEN
+        ELSIF(OP_TYPE = OP_TYPE_STORE) THEN            
             -- Check validity and send data            
             CASE LSU_OP IS
                 WHEN LSU_TYPE_SB => 
