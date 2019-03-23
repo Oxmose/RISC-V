@@ -11,7 +11,7 @@
 --              IN:  64 bits, D The 64 bits value to store.
 --              IN:  1 bit, RST resets the register, stored value will be 0.
 --              IN:  1 bit, CLK register clock.
---              IN:  1 bit, EN 1 enables write to the register, 0 disables write to the register.
+--              IN:  1 bit, WR 1 enables write to the register, 0 disables write to the register.
 --              OUT: 64 bits, Q the output value of the register.
 -- 
 -- Dependencies: None.
@@ -23,30 +23,30 @@
 ----------------------------------------------------------------------------------
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
-entity REGISTER_64B is
-    Port ( CLK : in STD_LOGIC;
-           RST : in STD_LOGIC;
-           EN :  in STD_LOGIC;
-           D :   in STD_LOGIC_VECTOR (63 downto 0);
-           Q :   out STD_LOGIC_VECTOR (63 downto 0)
+ENTITY REGISTER_64B IS
+    PORT ( CLK : IN STD_LOGIC;
+           RST : IN STD_LOGIC;
+           WR :  IN STD_LOGIC;
+           D :   IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           Q :   OUT STD_LOGIC_VECTOR(63 DOWNTO 0)
     );
-end REGISTER_64B;
+END REGISTER_64B;
 
-architecture REGISTER_64B_BEHAVIOR of REGISTER_64B is
-begin
+ARCHITECTURE REGISTER_64B_BEHAVIOR OF REGISTER_64B IS
+BEGIN
 
-    process(RST, CLK, EN)
-    begin
+    REG_PROC: PROCESS(RST, CLK, WR)
+    BEGIN
         -- On RST, set Q to 0
-        if(RST = '1') then
-            Q <= (others => '0');
+        IF(RST = '1') THEN
+            Q <= (OTHERS => '0');
         -- On rising eadge, if EN is set to 1, write new output
-        elsif(rising_edge(CLK) AND EN = '1') then
+        ELSIF(RISING_EDGE(CLK) AND WR = '1') THEN
             Q <= D;
-        end if;
-    end process;
+        END IF;
+    END PROCESS REG_PROC;
 
-end REGISTER_64B_BEHAVIOR;
+END REGISTER_64B_BEHAVIOR;

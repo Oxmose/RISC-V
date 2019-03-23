@@ -32,7 +32,7 @@ component REGISTER_64B is
     Port ( D :   in STD_LOGIC_VECTOR (63 downto 0);
            RST : in STD_LOGIC;
            CLK : in STD_LOGIC;
-           EN :  in STD_LOGIC;
+           WR :  in STD_LOGIC;
            Q :   out STD_LOGIC_VECTOR (63 downto 0));
 end component;
 
@@ -51,7 +51,7 @@ begin
         D => COUNTER_D,
         RST => RST_D,
         CLK => CLK_D,
-        EN => EN_D,
+        WR => EN_D,
         Q => OUTPUT
     );
         
@@ -91,13 +91,14 @@ begin
         else 
             EN_D <= '1'; 
         end if;
+        
         if(COUNTER_D = X"000000000000000E") then
-           assert(OUTPUT = X"000000000000000C")
+           assert(OUTPUT = X"000000000000000D")
            report "ERROR: Disabled register changed value. 0";
         elsif(COUNTER_D = X"000000000000000F") then
-           assert(OUTPUT = X"000000000000000C")
+           assert(OUTPUT = X"000000000000000D")
            report "ERROR: Disabled register changed value. 0";
-        else 
+        elsif(unsigned(COUNTER_D) /= 0 and unsigned(COUNTER_D) /= 1) then
             assert(OUTPUT = COUNTER_D)
             report "ERROR: Register has the wrong value. 1";
         end if;

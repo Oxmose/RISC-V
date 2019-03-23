@@ -30,51 +30,56 @@
 ----------------------------------------------------------------------------------
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
-entity IF_STAGE is 
-    Port ( CLK :            in STD_LOGIC;
-           RST :            in STD_LOGIC;
-           STALL :          in STD_LOGIC;
-           EF_JUMP:         in STD_LOGIC;
-           JUMP_INST_ADDR : in STD_LOGIC_VECTOR (63 downto 0);
-           INST_MEM_DATA :  in STD_LOGIC_VECTOR (63 downto 0);
-           PC :             out STD_LOGIC_VECTOR (63 downto 0);
-           INSTRUCTION :    out STD_LOGIC_VECTOR (63 downto 0);
-           SIG_ALIGN:       out STD_LOGIC
+ENTITY IF_STAGE IS 
+    PORT ( CLK :            IN STD_LOGIC;
+           RST :            IN STD_LOGIC;
+           STALL :          IN STD_LOGIC;
+           EF_JUMP:         IN STD_LOGIC;
+           JUMP_INST_ADDR : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           INST_MEM_DATA :  IN STD_LOGIC_VECTOR (63 DOWNTO 0);
+           PC :             OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           INSTRUCTION :    OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           SIG_ALIGN :      OUT STD_LOGIC
     );
-end IF_STAGE;
+END IF_STAGE;
 
-architecture IF_STAGE_BEHAVE of IF_STAGE is
-
--- Signals
-signal CURR_INST_ADDR: STD_LOGIC_VECTOR(63 downto 0);
-signal MASK_INST_ADDR: STD_LOGIC_VECTOR(63 downto 0);
+ARCHITECTURE IF_STAGE_BEHAVE OF IF_STAGE IS
 
 -- Constants
-constant INSTRUCTION_WIDTH: integer := 4;
-constant INSTRUCTION_ALIGN: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000003";
+CONSTANT INSTRUCTION_WIDTH : INTEGER := 4;
+CONSTANT INSTRUCTION_ALIGN : STD_LOGIC_VECTOR(63 DOWNTO 0) := X"0000000000000003";
 
-begin
+-- Types
+-- NONE.
 
+-- Signals
+SIGNAL CURR_INST_ADDR : STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL MASK_INST_ADDR : STD_LOGIC_VECTOR(63 DOWNTO 0);
+
+-- Components
+-- NONE;
+
+BEGIN
     -- PC Incrementer process 
-    PC_INCREMENT: process(RST, CLK)
-    begin 
-        if(RST = '1') then
-            CURR_INST_ADDR <= (others => '0');
-        elsif(rising_edge(CLK) AND STALL = '0') then                        
+    PC_INCREMENT: PROCESS(RST, CLK)
+    BEGIN 
+        IF(RST = '1') THEN
+            CURR_INST_ADDR <= (OTHERS => '0');
+        ELSIF(rising_edge(CLK) AND STALL = '0') THEN                        
             -- PC Selector
-            if(EF_JUMP = '1') then
+            IF(EF_JUMP = '1') THEN
                 -- Jump instruction address
                 CURR_INST_ADDR <= JUMP_INST_ADDR;
-            else
+            ELSE
                 -- Increment instruction pointer
                 CURR_INST_ADDR <= STD_LOGIC_VECTOR(UNSIGNED(CURR_INST_ADDR) + INSTRUCTION_WIDTH);
-            end if;
-        end if;
-    end process PC_INCREMENT;
+            END IF;
+        END IF;
+    END PROCESS PC_INCREMENT;
             
     -- Async alignement exception signal      
     MASK_INST_ADDR <= CURR_INST_ADDR AND INSTRUCTION_ALIGN;
@@ -88,4 +93,4 @@ begin
     -- Link instruction with memory output 
     INSTRUCTION <= INST_MEM_DATA;
   
-end IF_STAGE_BEHAVE;
+END IF_STAGE_BEHAVE;

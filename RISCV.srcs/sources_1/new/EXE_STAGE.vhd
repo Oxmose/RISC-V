@@ -18,81 +18,84 @@
 ----------------------------------------------------------------------------------
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
-entity EXE_STAGE is 
-    Port ( OPERAND_0 :        in STD_LOGIC_VECTOR(63 downto 0);    
-           OPERAND_1 :        in STD_LOGIC_VECTOR(63 downto 0);
-           OPERAND_OFF :      in STD_LOGIC_VECTOR(63 downto 0);
+ENTITY EXE_STAGE IS 
+    PORT ( OPERAND_0 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);    
+           OPERAND_1 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           OPERAND_OFF :      IN STD_LOGIC_VECTOR(63 DOWNTO 0);
            
-           PC_IN :            in STD_LOGIC_VECTOR(63 downto 0);
+           PC_IN :            IN STD_LOGIC_VECTOR(63 DOWNTO 0);
            
-           ALU_OP :           in STD_LOGIC_VECTOR(3 downto 0);
-           BRANCH_OP :        in STD_LOGIC_VECTOR(3 downto 0); 
-           OP_TYPE :          in STD_LOGIC_VECTOR(3 downto 0);
+           ALU_OP :           IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+           BRANCH_OP :        IN STD_LOGIC_VECTOR(3 DOWNTO 0); 
+           OP_TYPE :          IN STD_LOGIC_VECTOR(3 DOWNTO 0);
            
-           PC_OUT :           out STD_LOGIC_VECTOR(63 downto 0);
-           RD_OUT :          out STD_LOGIC_VECTOR(63 downto 0);
+           PC_OUT :           OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           RD_OUT :           OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+            
+           ADDR_OUT :         OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           MEM_OP_OUT :       OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
            
-           ADDR_OUT :         out STD_LOGIC_VECTOR(63 downto 0);
-           MEM_OP_OUT :       out STD_LOGIC_VECTOR(63 downto 0);
+           B_TAKEN :          OUT STD_LOGIC;
+           RD_WRITE :         OUT STD_LOGIC;
            
-           B_TAKEN :          out STD_LOGIC;
-           RD_WRITE :         out STD_LOGIC;
-           
-           SIG_INVALID :      out STD_LOGIC    
+           SIG_INVALID :      OUT STD_LOGIC    
     );
           
-end EXE_STAGE;
+END EXE_STAGE;
 
-architecture EXE_STAGE_FLOW of EXE_STAGE is
-
--- Signals
-signal SIG_INVALID_ALU_BUFFER : STD_LOGIC;
-signal SIG_INVALID_BU_BUFFER  : STD_LOGIC;
-
-signal RD_WRITE_BUFFER : STD_LOGIC;
-
-signal BU_OUTPUT  : STD_LOGIC_VECTOR(63 downto 0);
-signal ALU_OUTPUT : STD_LOGIC_VECTOR(63 downto 0);
+ARCHITECTURE EXE_STAGE_FLOW OF EXE_STAGE IS
 
 -- Constants
-constant OP_TYPE_ALU    : STD_LOGIC_VECTOR(3 downto 0) := "0000";
-constant OP_TYPE_LUI    : STD_LOGIC_VECTOR(3 downto 0) := "0001";
-constant OP_TYPE_BRANCH : STD_LOGIC_VECTOR(3 downto 0) := "0010";
-constant OP_TYPE_LOAD   : STD_LOGIC_VECTOR(3 downto 0) := "0100";
-constant OP_TYPE_STORE  : STD_LOGIC_VECTOR(3 downto 0) := "0101";
+CONSTANT OP_TYPE_ALU :    STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
+CONSTANT OP_TYPE_LUI :    STD_LOGIC_VECTOR(3 DOWNTO 0) := "0001";
+CONSTANT OP_TYPE_BRANCH : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0010";
+CONSTANT OP_TYPE_LOAD :   STD_LOGIC_VECTOR(3 DOWNTO 0) := "0100";
+CONSTANT OP_TYPE_STORE :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0101";
+
+-- Types
+-- NONE.
+
+-- Signals
+SIGNAL SIG_INVALID_ALU_BUFFER : STD_LOGIC;
+SIGNAL SIG_INVALID_BU_BUFFER :  STD_LOGIC;
+
+SIGNAL RD_WRITE_BUFFER : STD_LOGIC;
+
+SIGNAL BU_OUTPUT :  STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL ALU_OUTPUT : STD_LOGIC_VECTOR(63 DOWNTO 0);
 
 -- Components
-component ALU_MODULE is
-    Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
-           OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
-           SEL :         in STD_LOGIC_VECTOR(3 downto 0);
-           VOUT :        out STD_LOGIC_VECTOR(63 downto 0);
-           SIG_INVALID : out STD_LOGIC
+COMPONENT ALU_MODULE IS
+    PORT ( OP1 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           OP2 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           SEL :         IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+           VOUT :        OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           SIG_INVALID : OUT STD_LOGIC
     );
-end component;
+END COMPONENT;
 
-component BRANCH_UNIT_MODULE is
-    Port ( OP1 :         in STD_LOGIC_VECTOR(63 downto 0);
-           OP2 :         in STD_LOGIC_VECTOR(63 downto 0);
-           OFF :         in STD_LOGIC_VECTOR(63 downto 0);
-           PC_IN :       in STD_LOGIC_VECTOR(63 downto 0);
-           SEL :         in STD_LOGIC_VECTOR(3 downto 0);
-           RD_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
-           PC_OUT :      out STD_LOGIC_VECTOR(63 downto 0);
-           B_TAKEN :     out STD_LOGIC;
-           RD_WRITE :    out STD_LOGIC;
-           SIG_INVALID : out STD_LOGIC
+COMPONENT BRANCH_UNIT_MODULE IS
+    PORT ( OP1 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           OP2 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           OFF :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           PC_IN :       IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           SEL :         IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+           RD_OUT :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           PC_OUT :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           B_TAKEN :     OUT STD_LOGIC;
+           RD_WRITE :    OUT STD_LOGIC;
+           SIG_INVALID : OUT STD_LOGIC
     );
-end component;
+END COMPONENT;
 
-begin
+BEGIN
 
     -- Link the ALU
-    ALU_MAP : ALU_MODULE Port Map(
+    ALU_MAP : ALU_MODULE PORT MAP(
         OP1         => OPERAND_0,
         OP2         => OPERAND_1,
         SEL         => ALU_OP,
@@ -101,7 +104,7 @@ begin
     );
     
     -- Link the BU
-    BU_MAP : BRANCH_UNIT_MODULE Port Map(
+    BU_MAP : BRANCH_UNIT_MODULE PORT MAP(
         OP1         => OPERAND_0,
         OP2         => OPERAND_1,
         OFF         => OPERAND_OFF,
@@ -150,4 +153,4 @@ begin
     -- Select the memory operand to use for the next stages
     MEM_OP_OUT <= OPERAND_OFF;
     
-end EXE_STAGE_FLOW;
+END EXE_STAGE_FLOW;

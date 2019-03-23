@@ -518,6 +518,8 @@ begin
             report "INFO: Test finished" severity note;
             NOTIFIED <= '1';
             wait for CLK_PERIOD;
+        else 
+            WAIT FOR CLK_PERIOD;
         end if;
     
         COUNTER_D <= COUNTER_D + 1;
