@@ -42,7 +42,8 @@ entity DUMMY_MEM is
            REQ_TYPE : in STD_LOGIC;
            REQ_SIZE : in STD_LOGIC_VECTOR(1 downto 0);
            MEM_ADDR : in STD_LOGIC_VECTOR(63 downto 0);
-           MEM_VALUE : inout STD_LOGIC_VECTOR(63 downto 0));
+           MEM_VALUE_IN : in STD_LOGIC_VECTOR(63 downto 0);
+           MEM_VALUE_OUT : out STD_LOGIC_VECTOR(63 downto 0));
 end DUMMY_MEM;
 
 architecture DUMMY_MEM_BEHAVE of DUMMY_MEM is
@@ -77,53 +78,53 @@ begin
 process(CLK, RST)
 begin
     if(RST = '1') then
-        MEM_VALUE <= (others => '0');
+        MEM_VALUE_OUT <= (others => '0');
     elsif(rising_edge(CLK) AND REQ = '1' AND SERVICING = '0') then 
         SERVICING <= '1';
         
         if(REQ_TYPE = '1') then
             if(REQ_SIZE = "00") then
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE(7 downto 0);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE_IN(7 downto 0);
             elsif(REQ_SIZE = "01") then
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE(7 downto 0);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1)) <= MEM_VALUE(15 downto 8);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE_IN(7 downto 0);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1)) <= MEM_VALUE_IN(15 downto 8);
             elsif(REQ_SIZE = "10") then
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE(7 downto 0);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1)) <= MEM_VALUE(15 downto 8);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2)) <= MEM_VALUE(23 downto 16);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3)) <= MEM_VALUE(31 downto 24);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE_IN(7 downto 0);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1)) <= MEM_VALUE_IN(15 downto 8);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2)) <= MEM_VALUE_IN(23 downto 16);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3)) <= MEM_VALUE_IN(31 downto 24);
             else
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE(7 downto 0);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1)) <= MEM_VALUE(15 downto 8);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2)) <= MEM_VALUE(23 downto 16);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3)) <= MEM_VALUE(31 downto 24);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 4)) <= MEM_VALUE(39 downto 32);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 5)) <= MEM_VALUE(47 downto 40);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 6)) <= MEM_VALUE(55 downto 48);
-                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 7)) <= MEM_VALUE(63 downto 56);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE_IN(7 downto 0);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1)) <= MEM_VALUE_IN(15 downto 8);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2)) <= MEM_VALUE_IN(23 downto 16);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3)) <= MEM_VALUE_IN(31 downto 24);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 4)) <= MEM_VALUE_IN(39 downto 32);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 5)) <= MEM_VALUE_IN(47 downto 40);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 6)) <= MEM_VALUE_IN(55 downto 48);
+                ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 7)) <= MEM_VALUE_IN(63 downto 56);
             end if;
             
         else 
-            MEM_VALUE <= (others => '0');
+            MEM_VALUE_OUT <= (others => '0');
             if(REQ_SIZE = "00") then
-                MEM_VALUE(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
+                MEM_VALUE_OUT(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
             elsif(REQ_SIZE = "01") then
-                MEM_VALUE(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
-                MEM_VALUE(15 downto 8) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1));
+                MEM_VALUE_OUT(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
+                MEM_VALUE_OUT(15 downto 8) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1));
             elsif(REQ_SIZE = "10") then
-                MEM_VALUE(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
-                MEM_VALUE(15 downto 8) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1));
-                MEM_VALUE(23 downto 16) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2));
-                MEM_VALUE(31 downto 24) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3));
+                MEM_VALUE_OUT(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
+                MEM_VALUE_OUT(15 downto 8) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1));
+                MEM_VALUE_OUT(23 downto 16) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2));
+                MEM_VALUE_OUT(31 downto 24) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3));
             else
-                MEM_VALUE(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
-                MEM_VALUE(15 downto 8) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1));
-                MEM_VALUE(23 downto 16) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2));
-                MEM_VALUE(31 downto 24) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3));
-                MEM_VALUE(39 downto 32) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 4));
-                MEM_VALUE(47 downto 40) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 5));
-                MEM_VALUE(55 downto 48) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 6));
-                MEM_VALUE(63 downto 56) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 7));
+                MEM_VALUE_OUT(7 downto 0) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR)));
+                MEM_VALUE_OUT(15 downto 8) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 1));
+                MEM_VALUE_OUT(23 downto 16) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 2));
+                MEM_VALUE_OUT(31 downto 24) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3));
+                MEM_VALUE_OUT(39 downto 32) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 4));
+                MEM_VALUE_OUT(47 downto 40) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 5));
+                MEM_VALUE_OUT(55 downto 48) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 6));
+                MEM_VALUE_OUT(63 downto 56) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 7));
             end if;
         end if;
         
