@@ -8,10 +8,10 @@
 -- Target Devices: Digilent NEXYS4
 -- Tool Versions: Vivado 2018.2
 -- Description: Arithmetic and Logic Unit
---              IN: 64 bits, OP1 the first operand.
---              IN: 64 bits, OP2 the second operand.
+--              IN: 32 bits, OP1 the first operand.
+--              IN: 32 bits, OP2 the second operand.
 --              IN: 4 bits, SEL the operation selector.
---              OUT: 64 bits, VOUT the output value.
+--              OUT: 32 bits, VOUT the output value.
 --              OUT: 1 bit, SIG_INVALID is set to 1 when an unknown operation is set in SEL.
 --
 -- The values of SEL determine the ALU operation:
@@ -40,10 +40,10 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY ALU_MODULE IS 
-    PORT ( OP1 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OP2 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    PORT ( OP1 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OP2 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            SEL :         IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-           VOUT :        OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           VOUT :        OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            SIG_INVALID : OUT STD_LOGIC
     ); 
 END ALU_MODULE;
@@ -89,9 +89,9 @@ BEGIN
         -- SUB
         STD_LOGIC_VECTOR(UNSIGNED(OP1) - UNSIGNED(OP2)) WHEN OP_SUB,
         -- SLT
-        X"000000000000000" & "000" & SLTI_RES  WHEN OP_SLT,
+        X"0000000" & "000" & SLTI_RES  WHEN OP_SLT,
         -- SLTU
-        X"000000000000000" & "000" & SLTIU_RES WHEN OP_SLTU,
+        X"0000000" & "000" & SLTIU_RES WHEN OP_SLTU,
         -- AND
         OP1 AND OP2 WHEN OP_AND,
         -- OR
@@ -99,11 +99,11 @@ BEGIN
         -- XOR
         OP1 XOR OP2 WHEN OP_XOR,
         -- SLL
-        STD_LOGIC_VECTOR(SHIFT_LEFT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 DOWNTO 0)))))  WHEN OP_SLL,
+        STD_LOGIC_VECTOR(SHIFT_LEFT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(4 DOWNTO 0)))))  WHEN OP_SLL,
         -- SRL
-        STD_LOGIC_VECTOR(SHIFT_RIGHT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 DOWNTO 0))))) WHEN OP_SRL,
+        STD_LOGIC_VECTOR(SHIFT_RIGHT(UNSIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(4 DOWNTO 0))))) WHEN OP_SRL,
         -- SRA
-        STD_LOGIC_VECTOR(SHIFT_RIGHT(SIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(5 DOWNTO 0)))))   WHEN OP_SRA,
+        STD_LOGIC_VECTOR(SHIFT_RIGHT(SIGNED(OP1), TO_INTEGER(UNSIGNED(OP2(4 DOWNTO 0)))))   WHEN OP_SRA,
         -- UNKNOWN
         (OTHERS => '1') WHEN OTHERS;
     

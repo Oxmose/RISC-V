@@ -9,17 +9,17 @@
 -- Tool Versions: Vivado 2018.2
 -- Description: Memory management stage, used to do LOAD and STORE operations.
 --              This modules is bypassed in case of non memory operations.
---              IN: 64 bits, DATA_OPERAND_IN the data operand used as input of the stage.
---              IN: 64 bits, MEM_ADDR_IN the memory address to access.
+--              IN: 32 bits, DATA_OPERAND_IN the data operand used as input of the stage.
+--              IN: 32 bits, MEM_ADDR_IN the memory address to access.
 --              IN: 4 bits, OP_TYPE the operation type.
 --              IN: 4 bits, LSU_OP the load or store operation type.
---              IN: 64 bits, MEM_LINK_VALUE_IN the value read from the memory.
---              OUT: 64 bits, MEM_LINK_VALUE_OUT the value to write to the memory.
---              OUT: 64 bits, MEM_LINK_ADDR the address to send to the memory controller.
+--              IN: 32 bits, MEM_LINK_VALUE_IN the value read from the memory.
+--              OUT: 32 bits, MEM_LINK_VALUE_OUT the value to write to the memory.
+--              OUT: 32 bits, MEM_LINK_ADDR the address to send to the memory controller.
 --              OUT: 2 bits, MEM_LINK_SIZE the access size (00 = byte, 01 = half, 10 = word, 11 = double).
 --              OUT: 1 bit, MEM_LINK_REQ_TYPE the request type (0 = read, 1 = write).
 --              OUT: 1 bit, MEM_LINK_REQ tells is a request to the memory is done (0 = no memory request, 1 = memory request).
---              OUT: 64 bits, DATA_OPERAND_OUT the data outputed by the stage (can be from the memory or not if not a memory operation).
+--              OUT: 32 bits, DATA_OPERAND_OUT the data outputed by the stage (can be from the memory or not if not a memory operation).
 --              OUT: 1 bit, SIG_INVALID is set to 1 when the operation is invalid, 0 otherwise.
 --              
 -- The value of OP_TYPE determines the operation:
@@ -56,20 +56,20 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
 ENTITY MEM_STAGE IS
-      PORT ( DATA_OPERAND_IN :  IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-             MEM_ADDR_IN :      IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+      PORT ( DATA_OPERAND_IN :  IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+             MEM_ADDR_IN :      IN STD_LOGIC_VECTOR(31 DOWNTO 0);
              OP_TYPE :          IN STD_LOGIC_VECTOR(3 DOWNTO 0);
              LSU_OP :           IN STD_LOGIC_VECTOR(3 DOWNTO 0);
              
-             MEM_LINK_VALUE_IN :  IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-             MEM_LINK_VALUE_OUT : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-             MEM_LINK_ADDR :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+             MEM_LINK_VALUE_IN :  IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+             MEM_LINK_VALUE_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+             MEM_LINK_ADDR :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
              MEM_LINK_SIZE :      OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
              MEM_LINK_REQ_TYPE :  OUT STD_LOGIC;
              MEM_LINK_REQ :       OUT STD_LOGIC;
                   
              
-             DATA_OPERAND_OUT : OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+             DATA_OPERAND_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
              SIG_INVALID :      OUT STD_LOGIC    
       );
 END MEM_STAGE;
@@ -83,15 +83,12 @@ CONSTANT OP_TYPE_STORE : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0101";
 CONSTANT LSU_TYPE_LB :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
 CONSTANT LSU_TYPE_LH :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0001";
 CONSTANT LSU_TYPE_LW :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0010";
-CONSTANT LSU_TYPE_LD :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0011";
 CONSTANT LSU_TYPE_LBU : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0100";
 CONSTANT LSU_TYPE_LHU : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0101";
-CONSTANT LSU_TYPE_LWU : STD_LOGIC_VECTOR(3 DOWNTO 0) := "0110";
 
 CONSTANT LSU_TYPE_SB :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "1000";
 CONSTANT LSU_TYPE_SH :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "1001";
 CONSTANT LSU_TYPE_SW :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "1010";
-CONSTANT LSU_TYPE_SD :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "1011";
 
 -- Types
 -- NONE.
@@ -123,20 +120,14 @@ BEGIN
                 WHEN LSU_TYPE_LH => 
                     DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length - 1 DOWNTO 16 => MEM_LINK_VALUE_IN(15)) & 
                                         MEM_LINK_VALUE_IN(15 DOWNTO 0);
-                WHEN LSU_TYPE_LW =>                     
-                    DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length - 1 DOWNTO 32 => MEM_LINK_VALUE_IN(31)) & 
-                                        MEM_LINK_VALUE_IN(31 DOWNTO 0);
-                WHEN LSU_TYPE_LD =>     
+                WHEN LSU_TYPE_LW =>     
                     DATA_OPERAND_OUT <= MEM_LINK_VALUE_IN;
                 WHEN LSU_TYPE_LBU =>
                     DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length  - 1downto 8 => '0') & 
                                         MEM_LINK_VALUE_IN(7 DOWNTO 0);
                 WHEN LSU_TYPE_LHU => 
                     DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length - 1 DOWNTO 16 => '0') & 
-                                        MEM_LINK_VALUE_IN(15 DOWNTO 0);
-                WHEN LSU_TYPE_LWU =>                     
-                    DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length - 1 DOWNTO 32 => '0') & 
-                                        MEM_LINK_VALUE_IN(31 DOWNTO 0);                  
+                                        MEM_LINK_VALUE_IN(15 DOWNTO 0);                 
                 WHEN OTHERS =>
                     -- Just copy the data
                     DATA_OPERAND_OUT <= DATA_OPERAND_IN; 
@@ -164,14 +155,10 @@ BEGIN
                     MEM_LINK_SIZE  <= "01";
                 WHEN LSU_TYPE_LW =>                     
                     MEM_LINK_SIZE  <= "10";
-                WHEN LSU_TYPE_LD =>
-                    MEM_LINK_SIZE <= "11";
                 WHEN LSU_TYPE_LBU => 
                     MEM_LINK_SIZE <= "00";
                 WHEN LSU_TYPE_LHU => 
-                    MEM_LINK_SIZE <= "01"; 
-                WHEN LSU_TYPE_LWU => 
-                    MEM_LINK_SIZE <= "10";                    
+                    MEM_LINK_SIZE <= "01";                   
                 WHEN OTHERS =>
                     -- INVALID operation
                     INVALID_REQ <= '1';
@@ -184,19 +171,15 @@ BEGIN
             CASE LSU_OP IS
                 WHEN LSU_TYPE_SB => 
                     MEM_LINK_VALUE_OUT(7 DOWNTO 0)  <= DATA_OPERAND_IN(7 DOWNTO 0);
-                    MEM_LINK_VALUE_OUT(63 DOWNTO 8) <= (OTHERS => '0');
+                    MEM_LINK_VALUE_OUT(31 DOWNTO 8) <= (OTHERS => '0');
                     MEM_LINK_SIZE                   <= "00";
                 WHEN LSU_TYPE_SH => 
                     MEM_LINK_VALUE_OUT(15 DOWNTO 0)  <= DATA_OPERAND_IN(15 DOWNTO 0);
-                    MEM_LINK_VALUE_OUT(63 DOWNTO 16) <= (OTHERS => '0');
+                    MEM_LINK_VALUE_OUT(31 DOWNTO 16) <= (OTHERS => '0');
                     MEM_LINK_SIZE                    <= "01";
                 WHEN LSU_TYPE_SW =>                     
-                    MEM_LINK_VALUE_OUT(31 DOWNTO 0)  <= DATA_OPERAND_IN(31 DOWNTO 0);
-                    MEM_LINK_VALUE_OUT(63 DOWNTO 32) <= (OTHERS => '0');                
-                    MEM_LINK_SIZE                    <= "10";
-                WHEN LSU_TYPE_SD =>                     
                     MEM_LINK_VALUE_OUT <= DATA_OPERAND_IN;               
-                    MEM_LINK_SIZE      <= "11";           
+                    MEM_LINK_SIZE      <= "10";           
                 WHEN OTHERS =>
                     -- INVALID operation
                     INVALID_REQ <= '1';

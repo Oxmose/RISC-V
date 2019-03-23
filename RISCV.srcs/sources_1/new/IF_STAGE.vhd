@@ -15,10 +15,10 @@
 --              IN: 1 bit, RST asynchronous reset.
 --              IN: 1 bit, STALL asynchronous stall signal.
 --              IN: 1 bit, EF_JUMP effective jump when 1
---              IN: 64 bits, JUMP_INST_ADDR the jump address.
---              IN: 64 bits, INST_MEM_DATA the data from the instruction memory.
---              OUT: 64 bits, PC the address to fetch the data from.
---              OUT: 64 bits, INSTRUCTION the fetched instruction.
+--              IN: 32 bits, JUMP_INST_ADDR the jump address.
+--              IN: 32 bits, INST_MEM_DATA the data from the instruction memory.
+--              OUT: 32 bits, PC the address to fetch the data from.
+--              OUT: 32 bits, INSTRUCTION the fetched instruction.
 --              OUT   1 bit, SIG_ALIGN alignement exception signal.
 --
 -- Dependencies: None.
@@ -39,10 +39,10 @@ ENTITY IF_STAGE IS
            RST :            IN STD_LOGIC;
            STALL :          IN STD_LOGIC;
            EF_JUMP:         IN STD_LOGIC;
-           JUMP_INST_ADDR : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           INST_MEM_DATA :  IN STD_LOGIC_VECTOR (63 DOWNTO 0);
-           PC :             OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-           INSTRUCTION :    OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           JUMP_INST_ADDR : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           INST_MEM_DATA :  IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+           PC :             OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           INSTRUCTION :    OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            SIG_ALIGN :      OUT STD_LOGIC
     );
 END IF_STAGE;
@@ -51,14 +51,14 @@ ARCHITECTURE IF_STAGE_BEHAVE OF IF_STAGE IS
 
 -- Constants
 CONSTANT INSTRUCTION_WIDTH : INTEGER := 4;
-CONSTANT INSTRUCTION_ALIGN : STD_LOGIC_VECTOR(63 DOWNTO 0) := X"0000000000000003";
+CONSTANT INSTRUCTION_ALIGN : STD_LOGIC_VECTOR(31 DOWNTO 0) := X"00000003";
 
 -- Types
 -- NONE.
 
 -- Signals
-SIGNAL CURR_INST_ADDR : STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL MASK_INST_ADDR : STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL CURR_INST_ADDR : STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL MASK_INST_ADDR : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 -- Components
 -- NONE;
@@ -84,7 +84,7 @@ BEGIN
     -- Async alignement exception signal      
     MASK_INST_ADDR <= CURR_INST_ADDR AND INSTRUCTION_ALIGN;
     WITH MASK_INST_ADDR SELECT SIG_ALIGN <=
-        '0' WHEN X"0000000000000000",
+        '0' WHEN X"00000000",
         '1' WHEN OTHERS;
         
     -- Link PC and CURR_INST_ADDR

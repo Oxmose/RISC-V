@@ -10,12 +10,12 @@
 -- Description: Instruction Decode stage of the RISCV processor.
 --              This stage decodes the instruction.The instruction is split in different
 --              parts that are used in the next stages.
---              IN: 64 bits, INSTRUCTION_DATA the data to decode.
---              IN: 64 bits, REG_RVAL1 the value or the first register requested in the register file.
---              IN: 64 bits, REG_RVAL2 the value or the second register requested in the register file.
---              OUT: 64 bits, OPERAND_0 the value of the first operand of the instruction.
---              OUT: 64 bits, OPERAND_1 the value of the second operand of the instruction.
---              OUT: 64 bits, OPERAND_OFF the value of the offset operand of the instruction.
+--              IN: 32 bits, INSTRUCTION_DATA the data to decode.
+--              IN: 32 bits, REG_RVAL1 the value or the first register requested in the register file.
+--              IN: 32 bits, REG_RVAL2 the value or the second register requested in the register file.
+--              OUT: 32 bits, OPERAND_0 the value of the first operand of the instruction.
+--              OUT: 32 bits, OPERAND_1 the value of the second operand of the instruction.
+--              OUT: 32 bits, OPERAND_OFF the value of the offset operand of the instruction.
 --              OUT: 5 bits, RD the register id for RD. 
 --              OUT: 4 bits, ALU_OP the ALU operation to be executed.
 --              OUT: 4 bits, BRANCH_OP the BRANCH operation to be executed.
@@ -38,14 +38,14 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY ID_STAGE IS 
-    PORT ( INSTRUCTION_DATA : IN STD_LOGIC_VECTOR(63 DOWNTO 0); 
+    PORT ( INSTRUCTION_DATA : IN STD_LOGIC_VECTOR(31 DOWNTO 0); 
            
-           REG_RVAL1 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           REG_RVAL2 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           REG_RVAL1 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           REG_RVAL2 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            
-           OPERAND_0 :        OUT STD_LOGIC_VECTOR(63 DOWNTO 0);    
-           OPERAND_1 :        OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OPERAND_OFF :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           OPERAND_0 :        OUT STD_LOGIC_VECTOR(31 DOWNTO 0);    
+           OPERAND_1 :        OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OPERAND_OFF :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            
            RD :               OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            
@@ -98,11 +98,11 @@ SIGNAL RS1 :    STD_LOGIC_VECTOR(4 DOWNTO 0);
 SIGNAL RS2 :    STD_LOGIC_VECTOR(4 DOWNTO 0);
 SIGNAL FUNCT3 : STD_LOGIC_VECTOR(2 DOWNTO 0);
 SIGNAL FUNCT7 : STD_LOGIC_VECTOR(6 DOWNTO 0);
-SIGNAL IMM_I :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL IMM_S :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL IMM_B :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL IMM_U :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL IMM_J :  STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL IMM_I :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL IMM_S :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL IMM_B :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL IMM_U :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL IMM_J :  STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 -- Components 
 -- NONE;
@@ -129,31 +129,30 @@ BEGIN
    
      -- I Immediate
      IMM_I(10 DOWNTO 0)  <= INSTRUCTION_DATA(30 DOWNTO 20);
-     IMM_I(63 DOWNTO 11) <= (OTHERS => INSTRUCTION_DATA(31));
+     IMM_I(31 DOWNTO 11) <= (OTHERS => INSTRUCTION_DATA(31));
    
      -- S Immediate
      IMM_S(4 DOWNTO 0)   <= INSTRUCTION_DATA(11 DOWNTO 7);
      IMM_S(10 DOWNTO 5)  <= INSTRUCTION_DATA(30 DOWNTO 25);
-     IMM_S(63 DOWNTO 11) <= (OTHERS => INSTRUCTION_DATA(31));
+     IMM_S(31 DOWNTO 11) <= (OTHERS => INSTRUCTION_DATA(31));
    
      -- B Immmediate
      IMM_B(0) <= '0';
      IMM_B(4 DOWNTO 1)   <= INSTRUCTION_DATA(11 DOWNTO 8);
      IMM_B(10 DOWNTO 5)  <= INSTRUCTION_DATA(30 DOWNTO 25);
      IMM_B(11)           <= INSTRUCTION_DATA(7);
-     IMM_B(63 DOWNTO 12) <= (OTHERS => INSTRUCTION_DATA(31)); 
+     IMM_B(31 DOWNTO 12) <= (OTHERS => INSTRUCTION_DATA(31)); 
    
      -- U Immediate
      IMM_U(11 DOWNTO 0)  <= (OTHERS => '0'); 
      IMM_U(31 DOWNTO 12) <= INSTRUCTION_DATA(31 DOWNTO 12);
-     IMM_U(63 DOWNTO 32) <= (OTHERS => INSTRUCTION_DATA(31));
    
      -- J Immediate
      IMM_J(0)            <= '0';
      IMM_J(10 DOWNTO 1)  <= INSTRUCTION_DATA(30 DOWNTO 21);
      IMM_J(11)           <= INSTRUCTION_DATA(20);
      IMM_J(19 DOWNTO 12) <= INSTRUCTION_DATA(19 DOWNTO 12);
-     IMM_J(63 DOWNTO 20) <= (OTHERS => INSTRUCTION_DATA(31));
+     IMM_J(31 DOWNTO 20) <= (OTHERS => INSTRUCTION_DATA(31));
                
     -- Manage OPCODE
     DECODE_PROCESS: PROCESS(INSTRUCTION_DATA, OPCODE,

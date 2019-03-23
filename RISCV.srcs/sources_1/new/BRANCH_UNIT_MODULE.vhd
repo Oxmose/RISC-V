@@ -8,13 +8,13 @@
 -- Target Devices: Digilent NEXYS4
 -- Tool Versions: Vivado 2018.2
 -- Description: Branch unit
---              IN: 64 bits, OP1 the first operand.
---              IN: 64 bits, OP2 the second operand.
---              IN: 64 bits, OFF the offset to add to PC.
---              IN: 64 bits, PC_IN the current value of PC.
+--              IN: 32 bits, OP1 the first operand.
+--              IN: 32 bits, OP2 the second operand.
+--              IN: 32 bits, OFF the offset to add to PC.
+--              IN: 32 bits, PC_IN the current value of PC.
 --              IN: 4 bits, SEL the branch operation selector.
---              OUT: 64 bits, RD_OUT the output for RD.
---              OUT: 64 bits, PC_OUT the output for PC.
+--              OUT: 32 bits, RD_OUT the output for RD.
+--              OUT: 32 bits, PC_OUT the output for PC.
 --              OUT: 1 bit, B_TABKEN is set to 1 when the branch is taken, 0 otherwise.
 --              OUT: 1 bit, RD_WRITE is set to 1 is RD must be rewriten.
 --              OUT: 1 bit, SIG_INVALID is set to 1 when the branch operation is invalid, 0 otherwise.
@@ -45,13 +45,13 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY BRANCH_UNIT_MODULE IS
-    PORT ( OP1 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OP2 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OFF :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           PC_IN :       IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    PORT ( OP1 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OP2 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OFF :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           PC_IN :       IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            SEL :         IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-           RD_OUT :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-           PC_OUT :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           RD_OUT :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           PC_OUT :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            B_TAKEN :     OUT STD_LOGIC;
            RD_WRITE :    OUT STD_LOGIC;
            SIG_INVALID : OUT STD_LOGIC
@@ -79,15 +79,15 @@ CONSTANT OP_BGEU :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0111";
 -- NONE.
 
 -- Signals 
-SIGNAL BEQ_RES :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL BNE_RES :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL BLT_RES :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL BLTU_RES : STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL BGE_RES :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL BGEU_RES : STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL BEQ_RES :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL BNE_RES :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL BLT_RES :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL BLTU_RES : STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL BGE_RES :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL BGEU_RES : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
-SIGNAL SHIFT_OFF_NEXT : STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL NEXT_PC :        STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL SHIFT_OFF_NEXT : STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL NEXT_PC :        STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 -- Components
 -- NONE.
@@ -120,7 +120,7 @@ BEGIN
         -- JAL JALR
         STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + INSTRUCTION_WIDTH) WHEN OP_JAL | OP_JALR,
         -- Others
-        X"0000000000000000" WHEN OTHERS;
+        (OTHERS => '0') WHEN OTHERS;
         
     -- Set RD_WRITE
     WITH SEL SELECT RD_WRITE <=
@@ -136,7 +136,7 @@ BEGIN
        -- JAL
        SHIFT_OFF_NEXT WHEN OP_JAL,
        -- JALR
-       STD_LOGIC_VECTOR(UNSIGNED(OP1) + UNSIGNED(OFF)) AND X"FFFFFFFFFFFFFFFE" WHEN OP_JALR,
+       STD_LOGIC_VECTOR(UNSIGNED(OP1) + UNSIGNED(OFF)) AND X"FFFFFFFE" WHEN OP_JALR,
        -- BEQ
        BEQ_RES WHEN OP_BEQ,
        -- BNE

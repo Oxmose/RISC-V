@@ -36,9 +36,9 @@ component  REG_BANK
            RRID1 : in STD_LOGIC_VECTOR (4 downto 0);  
            RRID2 : in STD_LOGIC_VECTOR (4 downto 0);  
            WRID :  in STD_LOGIC_VECTOR (4 downto 0);  
-           WRVAL : in STD_LOGIC_VECTOR (63 downto 0);
-           RRVAL1 : OUT STD_LOGIC_VECTOR (63 downto 0);
-           RRVAL2 : OUT STD_LOGIC_VECTOR (63 downto 0));
+           WRVAL : in STD_LOGIC_VECTOR (31 downto 0);
+           RRVAL1 : OUT STD_LOGIC_VECTOR (31 downto 0);
+           RRVAL2 : OUT STD_LOGIC_VECTOR (31 downto 0));
 end component;
 
 signal RST_D:       STD_LOGIC := '1';
@@ -50,9 +50,9 @@ signal RRID1_D: STD_LOGIC_VECTOR(4 downto 0) := "00000";
 signal RRID2_D: STD_LOGIC_VECTOR(4 downto 0) := "00000";
 signal WRID_D: STD_LOGIC_VECTOR(4 downto 0) := "00000";
 
-signal WRVAL_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
-signal RRVAL1_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
-signal RRVAL2_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
+signal WRVAL_D: STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
+signal RRVAL1_D: STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
+signal RRVAL2_D: STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
 
 signal COUNTER: INTEGER := 0;
 signal INNER_COUNTER: STD_LOGIC_VECTOR(4 downto 0) := "00000";
@@ -116,7 +116,7 @@ begin
                 WRITE_D <= '1';
                 STALL_D <= '1';
                 
-                WRVAL_D <= X"FFFFFFFFFFFFFFFF";                
+                WRVAL_D <= X"FFFFFFFF";                
                 
                 WRID_D <= INNER_COUNTER;
                 INNER_COUNTER <= STD_LOGIC_VECTOR(UNSIGNED(INNER_COUNTER) + 1);  
@@ -143,9 +143,9 @@ begin
                 
                 RRID1_D <= INNER_COUNTER;
                 RRID2_D <= STD_LOGIC_VECTOR(UNSIGNED(INNER_COUNTER) + 1);
-                assert(RRVAL1_D = X"0000000000000000")
+                assert(RRVAL1_D = X"00000000")
                 report "ERROR: Wrong register value 4";  
-                assert(RRVAL2_D = X"0000000000000000")
+                assert(RRVAL2_D = X"00000000")
                 report "ERROR: Wrong register value 5";  
                 INNER_COUNTER <= STD_LOGIC_VECTOR(UNSIGNED(INNER_COUNTER) + 1); 
             else 

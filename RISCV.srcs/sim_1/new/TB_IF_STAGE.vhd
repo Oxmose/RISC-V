@@ -32,9 +32,9 @@ component IF_STAGE is
            RST :            in STD_LOGIC;
            STALL :          in STD_LOGIC;
            EF_JUMP:         in STD_LOGIC;
-           JUMP_INST_ADDR : in STD_LOGIC_VECTOR (63 downto 0);
-           INST_MEM_DATA :  in STD_LOGIC_VECTOR (63 downto 0);
-           PC :             out STD_LOGIC_VECTOR (63 downto 0);
+           JUMP_INST_ADDR : in STD_LOGIC_VECTOR (31 downto 0);
+           INST_MEM_DATA :  in STD_LOGIC_VECTOR (31 downto 0);
+           PC :             out STD_LOGIC_VECTOR (31 downto 0);
            SIG_ALIGN:       out STD_LOGIC);
 end component;
 
@@ -45,12 +45,12 @@ signal STALL_D:     STD_LOGIC := '0';
 signal EF_JUMP_D:   STD_LOGIC := '0';
 signal SIG_ALIGN_D: STD_LOGIC := '0';
 
-signal JUMP_INST_ADDR_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
-signal INST_MEM_DATA_D:  STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
-signal INST_MEM_ADDR_D:  STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
+signal JUMP_INST_ADDR_D: STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
+signal INST_MEM_DATA_D:  STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
+signal INST_MEM_ADDR_D:  STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
 
-signal CURRENT_ADDR:  STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
-signal COUNTER: STD_LOGIC_VECTOR(63 downto 0) := x"0000000000000000";
+signal CURRENT_ADDR:  STD_LOGIC_VECTOR(31 downto 0) := X"00000000";
+signal COUNTER: STD_LOGIC_VECTOR(31 downto 0) := x"00000000";
 
 constant CLK_PERIOD : time := 10ns;
 
@@ -81,27 +81,27 @@ begin
         if(rising_edge(CLK_D)) then
             
             -- Check RST
-            if(COUNTER = X"0000000000000000" OR COUNTER = X"0000000000000040") then
+            if(COUNTER = X"00000000" OR COUNTER = X"00000040") then
                 RST_D <= '1';
             else 
                 RST_D <= '0';
             end if;
                         
             -- Check EF_JUMP
-            if(COUNTER = X"0000000000000030") then
+            if(COUNTER = X"00000030") then
                 EF_JUMP_D <= '1';
-                JUMP_INST_ADDR_D <= X"0000000000010000";
+                JUMP_INST_ADDR_D <= X"00010000";
             else
                 EF_JUMP_D <= '0';
-                JUMP_INST_ADDR_D <= X"0000000000000000";
+                JUMP_INST_ADDR_D <= X"00000000";
             end if;
             
             -- Check STALL            
-            if(COUNTER = X"0000000000000010") then
+            if(COUNTER = X"00000010") then
                 STALL_D <= '1';
             end if;
             
-            if(COUNTER = X"0000000000000020") then
+            if(COUNTER = X"00000020") then
                 STALL_D <= '0';
             end if;
             
@@ -110,19 +110,19 @@ begin
             report "ERROR: Wrong addr value";
             
             -- Drive simple address             
-            if((INST_MEM_ADDR_D AND X"0000000000000004") = X"0000000000000004") then
-                INST_MEM_DATA_D <= X"000000000000FFFF";
+            if((INST_MEM_ADDR_D AND X"00000004") = X"00000004") then
+                INST_MEM_DATA_D <= X"0000FFFF";
             else 
-                INST_MEM_DATA_D <= X"00000000FFFF0000";
+                INST_MEM_DATA_D <= X"FFFF0000";
             end if;
             
             -- Check ALIGN
-            if(COUNTER = X"0000000000000050") then
+            if(COUNTER = X"00000050") then
                 EF_JUMP_D <= '1';
-                JUMP_INST_ADDR_D <= X"0000000000010001";
+                JUMP_INST_ADDR_D <= X"00010001";
             end if;
             
-            if(COUNTER >= X"0000000000000052") then
+            if(COUNTER >= X"00000052") then
                 assert(SIG_ALIGN_D = '1')
                 report "ERROR: Align sig not detected";
             else 
@@ -132,13 +132,13 @@ begin
             
             -- Increment values 
             COUNTER <= STD_LOGIC_VECTOR(UNSIGNED(COUNTER) + 1);
-            if(COUNTER = X"0000000000000031" AND STALL_D = '0') then
-                CURRENT_ADDR <= X"0000000000010000";
-            elsif((COUNTER = X"0000000000000040" OR COUNTER = X"0000000000000041") AND STALL_D = '0') then
-                CURRENT_ADDR <= X"0000000000000000";
-            elsif(COUNTER = X"0000000000000051" AND STALL_D = '0') then
-                CURRENT_ADDR <= X"0000000000010001";
-            elsif(COUNTER > X"0000000000000001" AND STALL_D = '0') then
+            if(COUNTER = X"00000031" AND STALL_D = '0') then
+                CURRENT_ADDR <= X"00010000";
+            elsif((COUNTER = X"00000040" OR COUNTER = X"00000041") AND STALL_D = '0') then
+                CURRENT_ADDR <= X"00000000";
+            elsif(COUNTER = X"00000051" AND STALL_D = '0') then
+                CURRENT_ADDR <= X"00010001";
+            elsif(COUNTER > X"00000001" AND STALL_D = '0') then
                 CURRENT_ADDR <= STD_LOGIC_VECTOR(UNSIGNED(CURRENT_ADDR) + 4);
             end if;
         end if;

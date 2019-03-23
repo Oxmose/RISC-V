@@ -23,21 +23,21 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY EXE_STAGE IS 
-    PORT ( OPERAND_0 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);    
-           OPERAND_1 :        IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OPERAND_OFF :      IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    PORT ( OPERAND_0 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);    
+           OPERAND_1 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OPERAND_OFF :      IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            
-           PC_IN :            IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+           PC_IN :            IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            
            ALU_OP :           IN STD_LOGIC_VECTOR(3 DOWNTO 0);
            BRANCH_OP :        IN STD_LOGIC_VECTOR(3 DOWNTO 0); 
            OP_TYPE :          IN STD_LOGIC_VECTOR(3 DOWNTO 0);
            
-           PC_OUT :           OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-           RD_OUT :           OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           PC_OUT :           OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RD_OUT :           OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
             
-           ADDR_OUT :         OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-           MEM_OP_OUT :       OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           ADDR_OUT :         OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           MEM_OP_OUT :       OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            
            B_TAKEN :          OUT STD_LOGIC;
            RD_WRITE :         OUT STD_LOGIC;
@@ -65,27 +65,27 @@ SIGNAL SIG_INVALID_BU_BUFFER :  STD_LOGIC;
 
 SIGNAL RD_WRITE_BUFFER : STD_LOGIC;
 
-SIGNAL BU_OUTPUT :  STD_LOGIC_VECTOR(63 DOWNTO 0);
-SIGNAL ALU_OUTPUT : STD_LOGIC_VECTOR(63 DOWNTO 0);
+SIGNAL BU_OUTPUT :  STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL ALU_OUTPUT : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 -- Components
 COMPONENT ALU_MODULE IS
-    PORT ( OP1 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OP2 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    PORT ( OP1 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OP2 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            SEL :         IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-           VOUT :        OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           VOUT :        OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            SIG_INVALID : OUT STD_LOGIC
     );
 END COMPONENT;
 
 COMPONENT BRANCH_UNIT_MODULE IS
-    PORT ( OP1 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OP2 :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           OFF :         IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-           PC_IN :       IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+    PORT ( OP1 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OP2 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           OFF :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           PC_IN :       IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            SEL :         IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-           RD_OUT :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-           PC_OUT :      OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+           RD_OUT :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           PC_OUT :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            B_TAKEN :     OUT STD_LOGIC;
            RD_WRITE :    OUT STD_LOGIC;
            SIG_INVALID : OUT STD_LOGIC
@@ -145,7 +145,7 @@ BEGIN
         -- On LUI, take immediate operand 0
         OPERAND_0 WHEN OP_TYPE_LUI,
         -- On Load, store, etc. the value of RD is decided later
-        X"0000000000000000" WHEN OTHERS;
+        X"00000000" WHEN OTHERS;
         
     -- Select the memory address to use for the next stages
     ADDR_OUT <= ALU_OUTPUT;

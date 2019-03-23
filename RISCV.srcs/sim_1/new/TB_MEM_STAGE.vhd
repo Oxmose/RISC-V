@@ -37,27 +37,27 @@ component DUMMY_MEM is
            REQ : in STD_LOGIC;
            REQ_TYPE : in STD_LOGIC;
            REQ_SIZE : in STD_LOGIC_VECTOR(1 downto 0);
-           MEM_ADDR : in STD_LOGIC_VECTOR(63 downto 0);
-           MEM_VALUE_IN : in STD_LOGIC_VECTOR(63 downto 0);
-           MEM_VALUE_OUT : out STD_LOGIC_VECTOR(63 downto 0));
+           MEM_ADDR : in STD_LOGIC_VECTOR(31 downto 0);
+           MEM_VALUE_IN : in STD_LOGIC_VECTOR(31 downto 0);
+           MEM_VALUE_OUT : out STD_LOGIC_VECTOR(31 downto 0));
 end component;
 
 -- Mem stage
 component MEM_STAGE is 
-    Port ( DATA_OPERAND_IN :  in STD_LOGIC_VECTOR(63 downto 0);
-           MEM_ADDR_IN :      in STD_LOGIC_VECTOR(63 downto 0);
+    Port ( DATA_OPERAND_IN :  in STD_LOGIC_VECTOR(31 downto 0);
+           MEM_ADDR_IN :      in STD_LOGIC_VECTOR(31 downto 0);
            OP_TYPE :          in STD_LOGIC_VECTOR(3 downto 0);
            LSU_OP :           in STD_LOGIC_VECTOR(3 downto 0);
              
-           MEM_LINK_VALUE_IN :  in STD_LOGIC_VECTOR(63 downto 0);
-           MEM_LINK_VALUE_OUT : out STD_LOGIC_VECTOR(63 downto 0);
-           MEM_LINK_ADDR :      out STD_LOGIC_VECTOR(63 downto 0);
+           MEM_LINK_VALUE_IN :  in STD_LOGIC_VECTOR(31 downto 0);
+           MEM_LINK_VALUE_OUT : out STD_LOGIC_VECTOR(31 downto 0);
+           MEM_LINK_ADDR :      out STD_LOGIC_VECTOR(31 downto 0);
            MEM_LINK_SIZE :      out STD_LOGIC_VECTOR(1 downto 0);
            MEM_LINK_REQ_TYPE :  out STD_LOGIC;
            MEM_LINK_REQ :       out STD_LOGIC;
                   
              
-           DATA_OPERAND_OUT : out STD_LOGIC_VECTOR(63 downto 0);
+           DATA_OPERAND_OUT : out STD_LOGIC_VECTOR(31 downto 0);
            SIG_INVALID :      out STD_LOGIC    
       );
 end component;
@@ -70,15 +70,15 @@ signal RST_D : STD_LOGIC := '0';
 signal REQ_D : STD_LOGIC := '0';
 signal REQ_TYPE_D : STD_LOGIC := '0';
 signal REQ_SIZE_D : STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
-signal MEM_ADDR_D : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
-signal MEM_VALUE_IN_D : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
-signal MEM_VALUE_OUT_D : STD_LOGIC_VECTOR(63 downto 0) := (others=> '0');
+signal MEM_ADDR_D : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+signal MEM_VALUE_IN_D : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+signal MEM_VALUE_OUT_D : STD_LOGIC_VECTOR(31 downto 0) := (others=> '0');
 
-signal DATA_OPERAND_IN_D : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
-signal MEM_ADDR_IN_D : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
+signal DATA_OPERAND_IN_D : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+signal MEM_ADDR_IN_D : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 signal OP_TYPE_D : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
 signal LSU_OP_D : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-signal DATA_OPERAND_OUT_D : STD_LOGIC_VECTOR(63 downto 0) := (others => '0');
+signal DATA_OPERAND_OUT_D : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 signal SIG_INVALID_D : STD_LOGIC := '0';
 
 signal COUNTER_D : integer := 0;
@@ -135,7 +135,7 @@ begin
             for i in 0 to 15 loop
                 if(i /= 4 AND i /= 5) then
                     OP_TYPE_D <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP_TYPE_D'length));
-                    DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+                    DATA_OPERAND_IN_D <= X"F0F1F2F3";
                     WAIT FOR CLK_PERIOD;
                     assert(REQ_D = '0')
                     report "Error NON_MEM_OP -> Wrong MEM_LINK_REQ value.";
@@ -147,262 +147,190 @@ begin
             end loop;
         elsif(COUNTER_D < 4) then -- LB VALID
             OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "0000";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP BYTE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"FFFFFFFFFFFFFFF0")
+            assert(DATA_OPERAND_OUT_D = X"FFFFFFF0")
             report "Error LOAD_MEM_OP BYTE -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "00")
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_ADDR value.";
 
-            MEM_ADDR_IN_D <= X"0000000000000001";
+            MEM_ADDR_IN_D <= X"00000001";
             LSU_OP_D <= "0000";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP BYTE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0000000000000001")
+            assert(DATA_OPERAND_OUT_D = X"00000001")
             report "Error LOAD_MEM_OP BYTE -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "00")
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
+            assert(MEM_ADDR_D = X"00000001")
             report "Error LOAD_MEM_OP BYTE -> Wrong MEM_ADDR value.";
             
         elsif(COUNTER_D < 5) then -- LH VALID
             OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "0001";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP HALF -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"FFFFFFFFFFFFF1F0")
+            assert(DATA_OPERAND_OUT_D = X"FFFFF1F0")
             report "Error LOAD_MEM_OP HALF -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "01")
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_ADDR value.";
 
-            MEM_ADDR_IN_D <= X"0000000000000001";
+            MEM_ADDR_IN_D <= X"00000001";
             LSU_OP_D <= "0001";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP HALF -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0000000000000201")
+            assert(DATA_OPERAND_OUT_D = X"00000201")
             report "Error LOAD_MEM_OP HALF -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "01")
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
+            assert(MEM_ADDR_D = X"00000001")
             report "Error LOAD_MEM_OP HALF -> Wrong MEM_ADDR value.";    
             
         elsif(COUNTER_D < 6) then -- LW VALID
             OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "0010";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP WORD -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"FFFFFFFFF3F2F1F0")
+            assert(DATA_OPERAND_OUT_D = X"F3F2F1F0")
             report "Error LOAD_MEM_OP WORD -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "10")
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_ADDR value.";
 
-            MEM_ADDR_IN_D <= X"0000000000000001";
+            MEM_ADDR_IN_D <= X"00000001";
             LSU_OP_D <= "0010";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP WORD -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0000000004030201")
+            assert(DATA_OPERAND_OUT_D = X"04030201")
             report "Error LOAD_MEM_OP WORD -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "10")
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
+            assert(MEM_ADDR_D = X"00000001")
             report "Error LOAD_MEM_OP WORD -> Wrong MEM_ADDR value.";
-              
-        elsif(COUNTER_D < 7) then -- LD VALID
+            
+        elsif(COUNTER_D < 7) then -- LBU VALID
             OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
-            LSU_OP_D <= "0011";
-            WAIT FOR CLK_PERIOD;
-            assert(REQ_D = '1')
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_LINK_REQ value.";
-            assert(SIG_INVALID_D = '0')
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"F7F6F5F4F3F2F1F0")
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong DATA_OPERAND_OUT value.";
-            assert(REQ_SIZE_D = "11")
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_LINK_SIZE value.";
-            assert(REQ_TYPE_D = '0')
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_ADDR value.";
-
-            MEM_ADDR_IN_D <= X"0000000000000001";
-            LSU_OP_D <= "0011";
-            WAIT FOR CLK_PERIOD;
-            assert(REQ_D = '1')
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_LINK_REQ value.";
-            assert(SIG_INVALID_D = '0')
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0807060504030201")
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong DATA_OPERAND_OUT value.";
-            assert(REQ_SIZE_D = "11")
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_LINK_SIZE value.";
-            assert(REQ_TYPE_D = '0')
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
-            report "Error LOAD_MEM_OP DOUBLE -> Wrong MEM_ADDR value.";  
-            
-        elsif(COUNTER_D < 8) then -- LBU VALID
-            OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
-            
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "0100";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP UBYTE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"00000000000000F0")
+            assert(DATA_OPERAND_OUT_D = X"000000F0")
             report "Error LOAD_MEM_OP UBYTE -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "00")
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_ADDR value.";
 
-            MEM_ADDR_IN_D <= X"0000000000000001";
+            MEM_ADDR_IN_D <= X"00000001";
             LSU_OP_D <= "0100";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP UBYTE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0000000000000001")
+            assert(DATA_OPERAND_OUT_D = X"00000001")
             report "Error LOAD_MEM_OP UBYTE -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "00")
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
+            assert(MEM_ADDR_D = X"00000001")
             report "Error LOAD_MEM_OP UBYTE -> Wrong MEM_ADDR value.";
             
-        elsif(COUNTER_D < 9) then -- LHU VALID
+        elsif(COUNTER_D < 8) then -- LHU VALID
             OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "0101";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP UHALF -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"000000000000F1F0")
+            assert(DATA_OPERAND_OUT_D = X"0000F1F0")
             report "Error LOAD_MEM_OP UHALF -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "01")
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_ADDR value.";
 
-            MEM_ADDR_IN_D <= X"0000000000000001";
+            MEM_ADDR_IN_D <= X"00000001";
             LSU_OP_D <= "0101";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error LOAD_MEM_OP UHALF -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0000000000000201")
+            assert(DATA_OPERAND_OUT_D = X"00000201")
             report "Error LOAD_MEM_OP UHALF -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "01")
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '0')
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
+            assert(MEM_ADDR_D = X"00000001")
             report "Error LOAD_MEM_OP UHALF -> Wrong MEM_ADDR value.";    
-            
-        elsif(COUNTER_D < 10) then -- LWU VALID
-            OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
-            
-            MEM_ADDR_IN_D <= X"00000000000000F0";
-            LSU_OP_D <= "0110";
-            WAIT FOR CLK_PERIOD;
-            assert(REQ_D = '1')
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_LINK_REQ value.";
-            assert(SIG_INVALID_D = '0')
-            report "Error LOAD_MEM_OP UWORD -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"00000000F3F2F1F0")
-            report "Error LOAD_MEM_OP UWORD -> Wrong DATA_OPERAND_OUT value.";
-            assert(REQ_SIZE_D = "10")
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_LINK_SIZE value.";
-            assert(REQ_TYPE_D = '0')
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_ADDR value.";
-
-            MEM_ADDR_IN_D <= X"0000000000000001";
-            LSU_OP_D <= "0110";
-            WAIT FOR CLK_PERIOD;
-            assert(REQ_D = '1')
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_LINK_REQ value.";
-            assert(SIG_INVALID_D = '0')
-            report "Error LOAD_MEM_OP UWORD -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"0000000004030201")
-            report "Error LOAD_MEM_OP UWORD -> Wrong DATA_OPERAND_OUT value.";
-            assert(REQ_SIZE_D = "10")
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_LINK_SIZE value.";
-            assert(REQ_TYPE_D = '0')
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"0000000000000001")
-            report "Error LOAD_MEM_OP UWORD -> Wrong MEM_ADDR value."; 
                         
-        elsif(COUNTER_D < 11) then -- Load INVALID
+        elsif(COUNTER_D < 9) then -- Load INVALID
             OP_TYPE_D <= "0100";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
-            for i in 7 to 15 loop
+            MEM_ADDR_IN_D <= X"000000F0";
+            for i in 6 to 15 loop
                 LSU_OP_D <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, LSU_OP_D'length));
                 WAIT FOR CLK_PERIOD;
                 assert(REQ_D = '0')
@@ -411,101 +339,79 @@ begin
                 report "Error LOAD_MEM_OP INVALID -> Wrong SIG_INVALID value.";
             end loop;
             
-        elsif(COUNTER_D < 12) then -- SB VALID
+        elsif(COUNTER_D < 10) then -- SB VALID
             OP_TYPE_D <= "0101";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "1000";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error STORE_MEM_OP BYTE -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error STORE_MEM_OP BYTE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"F0F1F2F3F4F5F6F7")
+            assert(DATA_OPERAND_OUT_D = X"F0F1F2F3")
             report "Error STORE_MEM_OP BYTE -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "00")
             report "Error STORE_MEM_OP BYTE -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '1')
             report "Error STORE_MEM_OP BYTE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error STORE_MEM_OP BYTE -> Wrong MEM_ADDR value.";
-            assert(MEM_VALUE_OUT_D = X"00000000000000F7")
+            assert(MEM_VALUE_OUT_D = X"000000F3")
             report "Error STORE_MEM_OP BYTE -> Wrong MEM_LINK_VALUE_OUT value.";  
             
-        elsif(COUNTER_D < 13) then -- SH VALID
+        elsif(COUNTER_D < 11) then -- SH VALID
             OP_TYPE_D <= "0101";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "1001";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error STORE_MEM_OP HALF -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error STORE_MEM_OP HALF -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"F0F1F2F3F4F5F6F7")
+            assert(DATA_OPERAND_OUT_D = X"F0F1F2F3")
             report "Error STORE_MEM_OP HALF -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "01")
             report "Error STORE_MEM_OP HALF -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '1')
             report "Error STORE_MEM_OP HALF -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error STORE_MEM_OP HALF -> Wrong MEM_ADDR value.";
-            assert(MEM_VALUE_OUT_D = X"000000000000F6F7")
+            assert(MEM_VALUE_OUT_D = X"0000F2F3")
             report "Error STORE_MEM_OP HALF -> Wrong MEM_LINK_VALUE_OUT value.";  
             
-        elsif(COUNTER_D < 14) then -- SW VALID
+        elsif(COUNTER_D < 12) then -- SW VALID
             OP_TYPE_D <= "0101";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F4F5F6F7";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             LSU_OP_D <= "1010";
             WAIT FOR CLK_PERIOD;
             assert(REQ_D = '1')
             report "Error STORE_MEM_OP WORD -> Wrong MEM_LINK_REQ value.";
             assert(SIG_INVALID_D = '0')
             report "Error STORE_MEM_OP WORD -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"F0F1F2F3F4F5F6F7")
+            assert(DATA_OPERAND_OUT_D = X"F4F5F6F7")
             report "Error STORE_MEM_OP WORD -> Wrong DATA_OPERAND_OUT value.";
             assert(REQ_SIZE_D = "10")
             report "Error STORE_MEM_OP WORD -> Wrong MEM_LINK_SIZE value.";
             assert(REQ_TYPE_D = '1')
             report "Error STORE_MEM_OP WORD -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
+            assert(MEM_ADDR_D = X"000000F0")
             report "Error STORE_MEM_OP WORD -> Wrong MEM_ADDR value.";
-            assert(MEM_VALUE_OUT_D = X"00000000F4F5F6F7")
+            assert(MEM_VALUE_OUT_D = X"F4F5F6F7")
             report "Error STORE_MEM_OP WORD -> Wrong MEM_LINK_VALUE_OUT value.";  
             
-        elsif(COUNTER_D < 15) then -- SD VALID
+        elsif(COUNTER_D < 13) then -- Store INVALID
             OP_TYPE_D <= "0101";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
+            DATA_OPERAND_IN_D <= X"F0F1F2F3";
             
-            MEM_ADDR_IN_D <= X"00000000000000F0";
-            LSU_OP_D <= "1011";
-            WAIT FOR CLK_PERIOD;
-            assert(REQ_D = '1')
-            report "Error STORE_MEM_OP DOUBLE -> Wrong MEM_LINK_REQ value.";
-            assert(SIG_INVALID_D = '0')
-            report "Error STORE_MEM_OP DOUBLE -> Wrong SIG_INVALID value.";
-            assert(DATA_OPERAND_OUT_D = X"F0F1F2F3F4F5F6F7")
-            report "Error STORE_MEM_OP DOUBLE -> Wrong DATA_OPERAND_OUT value.";
-            assert(REQ_SIZE_D = "11")
-            report "Error STORE_MEM_OP DOUBLE -> Wrong MEM_LINK_SIZE value.";
-            assert(REQ_TYPE_D = '1')
-            report "Error STORE_MEM_OP DOUBLE -> Wrong MEM_LINK_REQ_TYPE value.";
-            assert(MEM_ADDR_D = X"00000000000000F0")
-            report "Error STORE_MEM_OP DOUBLE -> Wrong MEM_ADDR value.";
-            assert(MEM_VALUE_OUT_D = X"F0F1F2F3F4F5F6F7")
-            report "Error STORE_MEM_OP DOUBLE -> Wrong MEM_LINK_VALUE_OUT value.";
-            
-        elsif(COUNTER_D < 16) then -- Store INVALID
-            OP_TYPE_D <= "0101";           
-            DATA_OPERAND_IN_D <= X"F0F1F2F3F4F5F6F7";
-            
-            MEM_ADDR_IN_D <= X"00000000000000F0";
+            MEM_ADDR_IN_D <= X"000000F0";
             for i in 0 to 15 loop
-                if(i /= 8 and i /= 9 and i /= 10 and i /= 11) then
+                if(i /= 8 and i /= 9 and i /= 10) then
                     LSU_OP_D <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, LSU_OP_D'length));
                     WAIT FOR CLK_PERIOD;
                     assert(REQ_D = '0')
