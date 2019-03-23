@@ -23,7 +23,7 @@
 --              OUT: 1 bit, RD_WRITE is set to 1 when RD must be updated
 --              OUT: 1 bit, SIG_INVALID is set to 1 when INVALID condition is detected
 --
--- Dependencies: None.
+-- Dependencies: ALU_MODULE, BRANCH_UNIT_MODULE.
 -- 
 -- Revision:
 -- Revision 0.01 - File Created
@@ -56,8 +56,7 @@ ENTITY EXE_STAGE IS
            RD_WRITE :         OUT STD_LOGIC;
            
            SIG_INVALID :      OUT STD_LOGIC    
-    );
-          
+    ); 
 END EXE_STAGE;
 
 ARCHITECTURE EXE_STAGE_FLOW OF EXE_STAGE IS

@@ -58,8 +58,7 @@ ENTITY ID_STAGE IS
            REG_RID2 :         OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            
            SIG_INVALID :      out STD_LOGIC
-    );
-          
+    );          
 END ID_STAGE;
 
 ARCHITECTURE ID_STAGE_BEHAVE OF ID_STAGE IS

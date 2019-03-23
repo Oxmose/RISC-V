@@ -9,7 +9,13 @@
 -- Tool Versions: Vivado 2018.2
 -- Description: Write back (or commit) stage, used to update destination register
 --              value.
--- 
+--              IN: 32 bits, RD_VAL_IN the value to commit to RD
+--              IN: 5 bits, RD_REG_IN the id of RD
+--              IN: 1 bit, RD_WRITE_IN must be set to 1 is RD should be updated
+--              OUT: 32 bits, RD_VAL_OUT the value to commit to RD
+--              OUT: 5 bits, RD_REG_OUT the id of RD
+--              OUT: 1 bit, RD_WRITE_OUT is set to 1 if RD should be updated
+--
 -- Dependencies: None.
 -- 
 -- Revision:
@@ -35,6 +41,18 @@ END WB_STAGE;
 
 -- At the current stage of developemnt, this stage is pretty useless.
 ARCHITECTURE WB_STAGE_FLOW OF WB_STAGE IS
+
+-- Constants
+-- NONE.
+
+-- Types
+-- NONE.
+
+-- Signals
+-- NONE.
+
+-- Components
+-- None.
 
 BEGIN
     -- Just link the input to the output
