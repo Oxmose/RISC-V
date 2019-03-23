@@ -44,7 +44,6 @@ component EXE_STAGE is
            RD_OUT :           OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
             
            ADDR_OUT :         OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-           MEM_OP_OUT :       OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            
            B_TAKEN :          OUT STD_LOGIC;
            RD_WRITE :         OUT STD_LOGIC;
@@ -77,7 +76,6 @@ signal PC_OUT_D :           STD_LOGIC_VECTOR(31 DOWNTO 0);
 signal RD_OUT_D :           STD_LOGIC_VECTOR(31 DOWNTO 0);
         
 signal ADDR_OUT_D :         STD_LOGIC_VECTOR(31 DOWNTO 0);
-signal MEM_OP_OUT_D :       STD_LOGIC_VECTOR(31 DOWNTO 0);
        
 signal B_TAKEN_D :          STD_LOGIC;
 signal RD_WRITE_D :         STD_LOGIC;
@@ -103,7 +101,6 @@ begin
        RD_OUT => RD_OUT_D,
         
        ADDR_OUT => ADDR_OUT_D,
-       MEM_OP_OUT => MEM_OP_OUT_D,
        
        B_TAKEN => B_TAKEN_D,
        RD_WRITE => RD_WRITE_D,

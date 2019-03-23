@@ -7,7 +7,21 @@
 -- Project Name: RISCV
 -- Target Devices: Digilent NEXYS4
 -- Tool Versions: Vivado 2018.2
--- Description: Execution stage.
+-- Description: Execution stage. Gathers the ALU and the BRANCH unit.
+--              IN: 32 bits, OPERAND_0 the first operand for BU or ALU operations
+--              IN: 32 bits, OPERAND_1 the second operand for BU or ALU operations
+--              IN: 32 bits, OPERAND_OFF the offset operand for BU or ALU operations, also used to keep store memory values
+--              IN: 32 bits, PC_IN PC value in
+--              IN: 4 bits, ALU_OP ALU operation selector
+--              IN: 4 bits, BRANCH_OP BRANCH Unit operation selector
+--              IN: 4 bits, OP_TYPE Operation type selector
+--              OUT: 32 bits, PC_OUT PC value out
+--              OUT: 32 bits, RD_OUT RD value out
+--              OUT: 32 bits, ADDR_OUT Memory access address
+--              OUT: 32 bits, MEM_OP_OUT Memory access value in case of store
+--              OUT: 1 bit, B_TAKEN
+--              OUT: 1 bit, RD_WRITE
+--              OUT: 1 bit, SIG_INVALID
 --
 -- Dependencies: None.
 -- 
@@ -37,7 +51,6 @@ ENTITY EXE_STAGE IS
            RD_OUT :           OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
             
            ADDR_OUT :         OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-           MEM_OP_OUT :       OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            
            B_TAKEN :          OUT STD_LOGIC;
            RD_WRITE :         OUT STD_LOGIC;
@@ -144,13 +157,11 @@ BEGIN
         ALU_OUTPUT WHEN OP_TYPE_ALU,
         -- On LUI, take immediate operand 0
         OPERAND_0 WHEN OP_TYPE_LUI,
-        -- On Load, store, etc. the value of RD is decided later
+        -- On STORE, take offset value
+        OPERAND_OFF WHEN OP_TYPE_STORE,
+        -- On Load, etc. the value of RD is decided later
         X"00000000" WHEN OTHERS;
         
     -- Select the memory address to use for the next stages
-    ADDR_OUT <= ALU_OUTPUT;
-    
-    -- Select the memory operand to use for the next stages
-    MEM_OP_OUT <= OPERAND_OFF;
-    
+    ADDR_OUT <= ALU_OUTPUT;    
 END EXE_STAGE_FLOW;
