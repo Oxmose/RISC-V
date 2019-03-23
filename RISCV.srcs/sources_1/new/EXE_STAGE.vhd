@@ -19,9 +19,9 @@
 --              OUT: 32 bits, RD_OUT RD value out
 --              OUT: 32 bits, ADDR_OUT Memory access address
 --              OUT: 32 bits, MEM_OP_OUT Memory access value in case of store
---              OUT: 1 bit, B_TAKEN
---              OUT: 1 bit, RD_WRITE
---              OUT: 1 bit, SIG_INVALID
+--              OUT: 1 bit, B_TAKEN is set to 1 when a branch is taken
+--              OUT: 1 bit, RD_WRITE is set to 1 when RD must be updated
+--              OUT: 1 bit, SIG_INVALID is set to 1 when INVALID condition is detected
 --
 -- Dependencies: None.
 -- 
