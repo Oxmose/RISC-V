@@ -36,7 +36,7 @@ component  REG_BANK
            RRID1 : in STD_LOGIC_VECTOR (4 downto 0);  
            RRID2 : in STD_LOGIC_VECTOR (4 downto 0);  
            WRID :  in STD_LOGIC_VECTOR (4 downto 0);  
-           RWVAL : in STD_LOGIC_VECTOR (63 downto 0);
+           WRVAL : in STD_LOGIC_VECTOR (63 downto 0);
            RRVAL1 : OUT STD_LOGIC_VECTOR (63 downto 0);
            RRVAL2 : OUT STD_LOGIC_VECTOR (63 downto 0));
 end component;
@@ -50,7 +50,7 @@ signal RRID1_D: STD_LOGIC_VECTOR(4 downto 0) := "00000";
 signal RRID2_D: STD_LOGIC_VECTOR(4 downto 0) := "00000";
 signal WRID_D: STD_LOGIC_VECTOR(4 downto 0) := "00000";
 
-signal RWVAL_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
+signal WRVAL_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
 signal RRVAL1_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
 signal RRVAL2_D: STD_LOGIC_VECTOR(63 downto 0) := X"0000000000000000";
 
@@ -69,7 +69,7 @@ begin
         RRID1 => RRID1_D, 
         RRID2 => RRID2_D, 
         WRID => WRID_D,   
-        RWVAL => RWVAL_D,
+        WRVAL => WRVAL_D,
         RRVAL1 => RRVAL1_D,
         RRVAL2 => RRVAL2_D
     );
@@ -94,7 +94,7 @@ begin
                 WRITE_D <= '1';
                 
                 WRID_D <= INNER_COUNTER;
-                RWVAL_D(4 downto 0) <= INNER_COUNTER;
+                WRVAL_D(4 downto 0) <= INNER_COUNTER;
                 
                 INNER_COUNTER <= STD_LOGIC_VECTOR(UNSIGNED(INNER_COUNTER) + 1);
             -- Test Read
@@ -116,7 +116,7 @@ begin
                 WRITE_D <= '1';
                 STALL_D <= '1';
                 
-                RWVAL_D <= X"FFFFFFFFFFFFFFFF";                
+                WRVAL_D <= X"FFFFFFFFFFFFFFFF";                
                 
                 WRID_D <= INNER_COUNTER;
                 INNER_COUNTER <= STD_LOGIC_VECTOR(UNSIGNED(INNER_COUNTER) + 1);  
