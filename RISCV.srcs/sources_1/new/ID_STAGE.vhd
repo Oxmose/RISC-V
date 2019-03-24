@@ -248,8 +248,8 @@ BEGIN
                 -- Select the BRANCH operation (JAL)
                 BRANCH_OP <= BU_OP_JAL;
                 
-                -- Select IMM as second operand
-                OPERAND_0 <= IMM_U;
+                -- Select IMM as offset operand
+                OPERAND_OFF <= IMM_J;
             
             WHEN JALR_OPCODE =>                               -- JALR
                 -- Check FUNCT3

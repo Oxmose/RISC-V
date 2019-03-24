@@ -619,14 +619,14 @@ begin
         
         -- Test JAL Decode
         elsif(COUNTER < 8) then
-            INSTRUCTION_DATA_D <= X"10101" & "10101" & "1101111"; 
+            INSTRUCTION_DATA_D <= '0' & "0101000110" & '1' & "10110100" & "10101" & "1101111"; 
            
             wait for CLK_PERIOD;
             assert(RD_D = "10101")
             report "ERROR: JAL -> Wrong RD Value.";
                     
-            assert(OPERAND_0_D = X"10101000")
-            report "ERROR: JAL -> Wrong OP1 Value.";
+            assert(OPERAND_OFF_D = "00000000000010110100101010001100")
+            report "ERROR: JAL -> Wrong OP OFF Value.";
           
             assert(OP_TYPE_D = "0010")
             report "ERROR: JAL -> Wrong OP_TYPE Value.";
