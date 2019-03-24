@@ -105,7 +105,7 @@ BEGIN
     BGEU_RES <= SHIFT_OFF_NEXT WHEN UNSIGNED(OP1) >= UNSIGNED(OP2) ELSE PC_IN;
     
     -- Compute branch taken signal
-    B_TAKEN <= '0' WHEN PC_IN = NEXT_PC ELSE '1';
+    B_TAKEN <= '0' WHEN (PC_IN = NEXT_PC AND SEL /= OP_JAL AND OP_JAL /= OP_JALR) ELSE '1';
     
     -- Compute invalid signal 
     SIG_INVALID <= '1' WHEN SEL = "0010" OR SEL = "0011" OR UNSIGNED(SEL) > MAX_OP ELSE '0';
