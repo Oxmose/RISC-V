@@ -114,7 +114,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: JAL -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: JAL -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000008")
@@ -156,7 +156,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BEQ -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BEQ -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -198,7 +198,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BNE -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BNE -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -240,7 +240,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BLT -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BLT -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -297,7 +297,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BLT -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BLT -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -338,7 +338,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BGE -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BGE -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -357,7 +357,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BGE -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BGE -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -398,7 +398,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BLTU -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BLTU -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -496,7 +496,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BGEU1 -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BGEU1 -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -515,7 +515,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BGEU2 -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BGEU2 -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")
@@ -534,7 +534,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: BGEU3 -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000024")
+            assert(PC_OUT_D = X"00000014")
             report "ERROR: BGEU3 -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000000")

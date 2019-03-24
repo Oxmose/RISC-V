@@ -94,7 +94,7 @@ SIGNAL NEXT_PC :        STD_LOGIC_VECTOR(31 DOWNTO 0);
 
 BEGIN
     -- Get next isntruction 
-    SHIFT_OFF_NEXT <= STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + SHIFT_LEFT(UNSIGNED(OFF), 1));
+    SHIFT_OFF_NEXT <= STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + UNSIGNED(OFF));
 
     -- Compute branch conditions 
     BEQ_RES  <= SHIFT_OFF_NEXT WHEN OP1 = OP2                      ELSE PC_IN;
