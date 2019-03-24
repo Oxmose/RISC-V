@@ -96,8 +96,221 @@ nop
 nop
 nop 
 
+############### SLTI 0x100
+addi x1, x0, 1
+addi x2, x0, 25
+addi x3, x0, -25
 
-############### END 0x100
+# <
+slti x5, x2, 50
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop 
+
+# =
+slti x5, x2, 25
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+slti x5, x2, 10
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+slti x5, x2, -10
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+slti x5, x2, -25
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# NOW WITH NEGATIVE
+
+# <
+slti x5, x3, 50
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop 
+
+# <
+slti x5, x3, 25
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop 
+
+# <
+slti x5, x3, -10
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop
+
+# =
+slti x5, x3, -25
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+slti x5, x3, -100
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+############### SLTI 0x250
+addi x1, x0, 1
+addi x2, x0, 25
+addi x3, x0, -25
+
+# <
+sltiu x5, x2, 50
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop 
+
+# =
+sltiu x5, x2, 25
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+sltiu x5, x2, 10
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+sltiu x5, x2, -10
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop 
+
+# >
+sltiu x5, x2, -25
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop 
+
+# NOW WITH NEGATIVE
+
+# <
+sltiu x5, x3, 50
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# <
+sltiu x5, x3, 25
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# <
+sltiu x5, x3, -10
+nop
+nop
+nop 
+nop
+bne x5, x1, error 
+nop 
+nop
+
+# =
+sltiu x5, x3, -25
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+# >
+sltiu x5, x3, -100
+nop
+nop
+nop 
+nop
+bne x5, x0, error 
+nop 
+nop 
+
+############### END 0x398
 nop
 nop
 
