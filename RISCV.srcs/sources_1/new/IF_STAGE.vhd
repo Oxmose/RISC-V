@@ -40,7 +40,14 @@ ENTITY IF_STAGE IS
            STALL :          IN STD_LOGIC;
            EF_JUMP:         IN STD_LOGIC;
            JUMP_INST_ADDR : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-           INST_MEM_DATA :  IN STD_LOGIC_VECTOR (31 DOWNTO 0);
+           
+           INST_MEM_DATA :      IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           MEM_LINK_VALUE_OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           MEM_LINK_ADDR :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+           MEM_LINK_SIZE :      OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+           MEM_LINK_REQ_TYPE :  OUT STD_LOGIC;
+           MEM_LINK_REQ :       OUT STD_LOGIC;
+           
            PC :             OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            INSTRUCTION :    OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            SIG_ALIGN :      OUT STD_LOGIC
@@ -69,8 +76,10 @@ BEGIN
     BEGIN 
         IF(RST = '1') THEN
             CURR_INST_ADDR <= (OTHERS => '0');
+            PC             <= (OTHERS => '0');
         ELSIF(rising_edge(CLK) AND STALL = '0') THEN                        
             -- PC Selector
+            PC <= CURR_INST_ADDR;
             IF(EF_JUMP = '1') THEN
                 -- Jump instruction address
                 CURR_INST_ADDR <= JUMP_INST_ADDR;
@@ -80,15 +89,25 @@ BEGIN
             END IF;
         END IF;
     END PROCESS PC_INCREMENT;
+    
+    -- We never write the instruction memory
+    MEM_LINK_REQ_TYPE  <= '0';
+    MEM_LINK_VALUE_OUT <= (OTHERS => '0');
+    
+    -- We never access other then 32 bits size instructions
+    MEM_LINK_SIZE <= "10";
+    
+    -- We request new data when not stalled
+    MEM_LINK_REQ <= NOT STALL AND NOT RST;
+    
+    -- PC + 4 is the next address to access
+    MEM_LINK_ADDR <= CURR_INST_ADDR;
             
     -- Async alignement exception signal      
     MASK_INST_ADDR <= CURR_INST_ADDR AND INSTRUCTION_ALIGN;
     WITH MASK_INST_ADDR SELECT SIG_ALIGN <=
         '0' WHEN X"00000000",
-        '1' WHEN OTHERS;
-        
-    -- Link PC and CURR_INST_ADDR
-    PC <= CURR_INST_ADDR;
+        '1' WHEN OTHERS;        
     
     -- Link instruction with memory output 
     INSTRUCTION <= INST_MEM_DATA;
