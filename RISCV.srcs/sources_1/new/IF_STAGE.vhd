@@ -76,10 +76,8 @@ BEGIN
     BEGIN 
         IF(RST = '1') THEN
             CURR_INST_ADDR <= (OTHERS => '0');
-            PC             <= (OTHERS => '0');
         ELSIF(rising_edge(CLK) AND STALL = '0') THEN                        
-            -- PC Selector
-            PC <= CURR_INST_ADDR;
+            -- PC Selector            
             IF(EF_JUMP = '1') THEN
                 -- Jump instruction address
                 CURR_INST_ADDR <= JUMP_INST_ADDR;
@@ -100,7 +98,8 @@ BEGIN
     -- We request new data when not stalled
     MEM_LINK_REQ <= NOT STALL AND NOT RST;
     
-    -- PC + 4 is the next address to access
+    -- PC is the next address to access
+    PC            <= CURR_INST_ADDR;
     MEM_LINK_ADDR <= CURR_INST_ADDR;
             
     -- Async alignement exception signal      

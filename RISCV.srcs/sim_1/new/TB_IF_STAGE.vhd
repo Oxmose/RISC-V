@@ -138,7 +138,7 @@ begin
             end if;
             
             -- Check ADDR for all mentionned above
-            assert(INST_MEM_ADDR_D = PAST_ADDR)
+            assert(INST_MEM_ADDR_D = CURRENT_ADDR)
             report "ERROR: Wrong PC value";
             
             -- Drive simple address             
