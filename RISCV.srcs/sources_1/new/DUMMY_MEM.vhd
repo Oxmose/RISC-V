@@ -19,12 +19,11 @@
 ----------------------------------------------------------------------------------
 
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-LIBRARY STD;
-USE STD.textio.all;
-LIBRARY work;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use ieee.std_logic_textio.all;
+use std.textio.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -47,20 +46,19 @@ entity DUMMY_MEM is
 end DUMMY_MEM;
 
 architecture DUMMY_MEM_BEHAVE of DUMMY_MEM is
-type ram_t is array (0 to 255) of std_logic_vector(7 downto 0);
+type ram_t is array (0 to 1023) of std_logic_vector(7 downto 0);
 subtype word_t  is std_logic_vector(7 downto 0);
 
 IMPURE FUNCTION init_rom RETURN ram_t IS
-		FILE rom_file   : text OPEN read_mode IS "DATA_RAM.txt";
+		FILE rom_file   : text OPEN read_mode IS "test.txt";
 		VARIABLE ret    : ram_t;
 		VARIABLE l      : line;
 		VARIABLE readV  : integer;
 	BEGIN
-		FOR i IN 0 TO 255 LOOP
+		FOR i IN 0 TO 1023 LOOP
 			IF(NOT ENDFILE(rom_file)) THEN
 				readline(rom_file, l);
-				read(l, readV);
-				ret(i) := STD_LOGIC_VECTOR(TO_UNSIGNED(readV, ret(i)'length));
+				hread(l, ret(i));
 			END IF;
 		END LOOP;
 		
@@ -75,13 +73,12 @@ signal ram : ram_t := init_rom;
 
 begin
 
-process(CLK, RST)
+process(CLK, RST, REQ)
 begin
     if(RST = '1') then
         MEM_VALUE_OUT <= (others => '0');
-    elsif(rising_edge(CLK) AND REQ = '1' AND SERVICING = '0') then 
+    elsif(REQ = '1' AND SERVICING = '0') then  
         SERVICING <= '1';
-        
         if(REQ_TYPE = '1') then
             if(REQ_SIZE = "00") then
                 ram(TO_INTEGER(UNSIGNED(MEM_ADDR))) <= MEM_VALUE_IN(7 downto 0);
@@ -109,7 +106,6 @@ begin
                 MEM_VALUE_OUT(31 downto 24) <= ram(TO_INTEGER(UNSIGNED(MEM_ADDR) + 3));
             end if;
         end if;
-        
         SERVICING <= '0';
     end if;
 end process;
