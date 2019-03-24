@@ -50,7 +50,7 @@ type ram_t is array (0 to 1023) of std_logic_vector(7 downto 0);
 subtype word_t  is std_logic_vector(7 downto 0);
 
 IMPURE FUNCTION init_rom RETURN ram_t IS
-		FILE rom_file   : text OPEN read_mode IS "test.txt";
+		FILE rom_file   : text OPEN read_mode IS "inst.txt";
 		VARIABLE ret    : ram_t;
 		VARIABLE l      : line;
 		VARIABLE readV  : integer;
