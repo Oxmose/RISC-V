@@ -75,6 +75,7 @@ CONSTANT OP_TYPE_STORE :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0101";
 SIGNAL SIG_INVALID_ALU_BUFFER : STD_LOGIC;
 SIGNAL SIG_INVALID_BU_BUFFER :  STD_LOGIC;
 
+SIGNAL B_TAKEN_BUFFER :  STD_LOGIC;
 SIGNAL RD_WRITE_BUFFER : STD_LOGIC;
 
 SIGNAL BU_OUTPUT :  STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -124,10 +125,14 @@ BEGIN
         SEL         => BRANCH_OP,
         RD_OUT      => BU_OUTPUT,
         PC_OUT      => PC_OUT,
-        B_TAKEN     => B_TAKEN,
+        B_TAKEN     => B_TAKEN_BUFFER,
         RD_WRITE    => RD_WRITE_BUFFER,
         SIG_INVALID => SIG_INVALID_BU_BUFFER
     );
+    
+    -- Check that if branch is taken that indeed we have a branch op
+    B_TAKEN <= B_TAKEN_BUFFER WHEN OP_TYPE = OP_TYPE_BRANCH
+               ELSE '0';
     
     -- Set the INVALID signal 
     WITH OP_TYPE SELECT SIG_INVALID <=

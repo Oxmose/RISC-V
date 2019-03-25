@@ -144,9 +144,12 @@ begin
                 elsif(STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP_TYPE_D'length)) = OP_TYPE_BRANCH) then
                    assert(RD_OUT_D = X"22222224")
                    report "ERROR: RDCHECK -> Wrong RD_OUT_D 2.";
+                elsif(STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP_TYPE_D'length)) = OP_TYPE_STORE) then
+                   assert(RD_OUT_D = X"00000004")
+                   report "ERROR: RDCHECK -> Wrong RD_OUT_D 3.";
                 else
                     assert(RD_OUT_D = X"00000000")
-                    report "ERROR: RDCHECK -> Wrong RD_OUT_D 3.";
+                    report "ERROR: RDCHECK -> Wrong RD_OUT_D 4.";
                 end if;
                 
             end loop;
@@ -165,6 +168,17 @@ begin
                 end if;
                 
             end loop;
+        elsif(counter < 4) then -- CHECK Branch taken   
+               
+                BRANCH_OP_D <= "1001"; 
+                OP_TYPE_D <= OP_TYPE_STORE;
+                
+                WAIT FOR CLK_PERIOD;
+                assert(RD_WRITE_D = '0')
+                report "ERROR: RDCHECK -> Wrong RD_WRITE 0.";
+                
+                assert(B_TAKEN_D = '0')
+                report "ERROR: RDCHECK -> Wrong B_TAKEN 1.";
         elsif(NOTIFY = '0') then
             NOTIFY <= '1';
             report "INFO: Test finished" severity note;
