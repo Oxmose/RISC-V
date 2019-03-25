@@ -203,7 +203,7 @@ bne x5, x0, error
 nop 
 nop 
 
-############### SLTI 0x250
+############### SLTIU 0x250
 addi x1, x0, 1
 addi x2, x0, 25
 addi x3, x0, -25
@@ -310,10 +310,47 @@ bne x5, x0, error
 nop 
 nop 
 
+############### ANDI 0x398
+addi x1, x0, 0xFFFFFFFF
+addi x2, x0, 0x000002A2
+nop 
+nop 
+andi x3, x1, 0x000003D1
+andi x4, x2, 0x00000122
+andi x5, x1, 0x00000000
+andi x6, x2, 0xFFFFFFFF 
+andi x7, x1, 0x00000232
+andi x8, x2, 0xFFFFFAA0
+
+addi x9, x0, 0x000003D1
+addi x10, x0, 0x00000022
+addi x11, x0, 0x00000232 
+addi x12, x0, 0x000002A0
+ 
+bne x3, x9, error 
+nop
+nop 
+bne x4, x10, error 
+nop 
+nop 
+bne x5, x0, error 
+nop 
+nop 
+bne x6, x2, error 
+nop 
+nop 
+bne x7, x11, error 
+nop 
+nop 
+bne x8, x12, error 
+nop 
+nop
+
 ############### END 0x398
 nop
 nop
 
 j success
+nop
 nop
 nop
