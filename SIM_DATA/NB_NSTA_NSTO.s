@@ -346,11 +346,47 @@ bne x8, x12, error
 nop 
 nop
 
-############### END 0x398
+############### ORI 0x41C
+addi x1, x0, 0xFFFFFFFF
+addi x2, x0, 0x000002A2
+nop 
+nop 
+ori x3, x1, 0x000003D1
+ori x4, x2, 0x00000421
+ori x5, x1, 0x00000000
+ori x6, x2, 0xFFFFFFFF 
+ori x7, x1, 0x00000232
+ori x8, x2, 0xFFFFFAA0
+
+addi x9, x0, 0x000003D1
+addi x10, x0, 0x000006A3
+addi x11, x0, 0x00000232 
+addi x12, x0, 0xFFFFFAA2
+ 
+bne x3, x1, error 
+nop
+nop 
+bne x4, x10, error 
+nop 
+nop 
+bne x5, x1, error 
+nop 
+nop 
+bne x6, x1, error 
+nop 
+nop 
+bne x7, x1, error 
+nop 
+nop 
+bne x8, x12, error 
+nop 
+nop
+
+
+############### END 0x498
 nop
 nop
 
 j success
-nop
 nop
 nop
