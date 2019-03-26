@@ -382,8 +382,36 @@ bne x8, x12, error
 nop 
 nop
 
+############### XORI 0x498
+addi x1, x0, 0x00000456
+addi x2, x0, 0x00000762
+nop 
+nop 
+xori x3, x1, 0x000006a1
+xori x4, x2, 0x00000421
+xori x5, x1, 0x000003ed
+xori x6, x2, 0x0000003c 
 
-############### END 0x498
+addi x9, x0, 0x000002f7
+addi x10, x0, 0x00000343
+addi x11, x0, 0x000007bb 
+addi x12, x0, 0x0000075e
+ 
+bne x3, x9, error 
+nop
+nop 
+bne x4, x10, error 
+nop 
+nop 
+bne x5, x11, error 
+nop 
+nop 
+bne x6, x12, error 
+nop 
+nop
+
+
+############### END 0x4FC
 nop
 nop
 
