@@ -93,7 +93,7 @@ begin
             assert(SIG_INVAL_D = '0')
             report "ERROR: AUIPC -> Wrong INVAL Value.";
             
-            assert(PC_OUT_D = X"00000014")
+            assert(PC_OUT_D = X"00000004")
             report "ERROR: AUIPC -> Wrong PC Value.";
             
             assert(RD_OUT_D = X"00000014")
@@ -102,7 +102,7 @@ begin
             assert(RD_WRITE_D = '1')
             report "ERROR: AUIPC -> Wrong RD_WRITE_D Value.";
             
-            assert(B_TAKEN_D = '1')
+            assert(B_TAKEN_D = '0')
             report "ERROR: AUIPC -> Wrong BRANCH_TAKEN Value.";
        
        -- JAL

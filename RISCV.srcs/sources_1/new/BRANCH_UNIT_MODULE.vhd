@@ -131,8 +131,6 @@ BEGIN
 
     -- Operation selector
     WITH SEL SELECT NEXT_PC <= 
-       -- AUIPC
-       STD_LOGIC_VECTOR(UNSIGNED(PC_IN) + UNSIGNED(OFF)) WHEN OP_AUIPC,
        -- JAL
        SHIFT_OFF_NEXT WHEN OP_JAL,
        -- JALR
