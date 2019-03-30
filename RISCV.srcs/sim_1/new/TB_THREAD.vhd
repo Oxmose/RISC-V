@@ -168,9 +168,15 @@ begin
             STALL_D <= '0';
          else 
             RST_D <= '0';
-         end if;
-         
+         end if;         
          counter <= counter + 1;
+         
+         -- Check current instruction (0x68 = error, 0x7C = success)
+         assert(INST_MEM_ADDR_D /= X"00000068")
+         report "ERROR: Test failed" severity failure;
+         assert(INST_MEM_ADDR_D /= X"0000007C")
+         report "SUCCESS: Test succeeded" severity note;
+         
      end if;
 end process;
 
