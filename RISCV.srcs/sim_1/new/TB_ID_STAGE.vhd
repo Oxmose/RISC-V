@@ -321,7 +321,7 @@ begin
             
             -- SRAI
             INSTRUCTION_DATA_D(14 downto 12) <= "101";
-            INSTRUCTION_DATA_D(30) <= '1';
+            INSTRUCTION_DATA_D(31 downto 25) <= "0100000";
             wait for CLK_PERIOD / 9;
             assert(RD_D = "00101")
             report "ERROR: OP-IMM -> Wrong RD Value.";
@@ -332,7 +332,7 @@ begin
             assert(OPERAND_0_D = X"0F0F0F0F")
             report "ERROR: OP-IMM -> Wrong OP0 Value.";
             
-            assert(OPERAND_1_D = X"FFFFF" & "110000010101")
+            assert(OPERAND_1_D = X"00000" & "010000010101")
             report "ERROR: OP-IMM -> Wrong OP1 Value.";
             
             assert(ALU_OP_D = "1000")

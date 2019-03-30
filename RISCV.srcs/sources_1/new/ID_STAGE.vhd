@@ -184,10 +184,19 @@ BEGIN
                 
                 -- Select the ALU operation
                 ALU_OP <= '0' & FUNCT3;
+                        
+                -- Check left shift validity 
+                IF(FUNCT3 = "001" AND (IMM_I(31 downto 5) /= X"000000" & "000")) THEN
+                    SIG_INVALID <= '1';
+                END IF;
                 
                 -- Check the SR A/L operation
-                IF(FUNCT3 = "101" AND IMM_I(10) = '1') THEN
-                    ALU_OP <= ALU_OP_SRA;                
+                IF(FUNCT3 = "101") THEN                    
+                    IF(IMM_I(31 DOWNTO 5) = X"0000" & "00000100000") THEN
+                        ALU_OP <= ALU_OP_SRA;
+                    ELSIF(IMM_I(31 DOWNTO 5) /= X"0000" & "00000000000") THEN
+                        SIG_INVALID <= '1';                        
+                    END IF;         
                 END IF;
                 
             WHEN OP_OPCODE =>                                -- OP
