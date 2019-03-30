@@ -258,7 +258,7 @@ begin
                 OP2_D <= X"0000003F";
                 SEL_D <= "0001";
                 wait for CLK_PERIOD / 130;
-                assert(SIG_INVALID_D = '0')
+                assert(SIG_INVALID_D = '1')
                 report("ERROR: SLL -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) sll 31))
                 report("ERROR: SLL value incorect");
@@ -302,7 +302,7 @@ begin
                 OP2_D <= X"0000003F";
                 SEL_D <= "0101";
                 wait for CLK_PERIOD / 130;
-                assert(SIG_INVALID_D = '0')
+                assert(SIG_INVALID_D = '1')
                 report("ERROR: SRL -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = STD_LOGIC_VECTOR(UNSIGNED(OP1_D) srl 31))
                 report("ERROR: SRL value incorect 2");
@@ -326,9 +326,9 @@ begin
                 SEL_D <= "1000";
                 for i in 0 to 31 loop
                     if(i = 0) then
-                        OP2_D <= X"00000000"; 
+                        OP2_D <= X"00000400"; 
                     else 
-                        OP2_D <= X"00000001";
+                        OP2_D <= X"00000401";
                     end if;
                     wait for CLK_PERIOD / 130;
                     assert(SIG_INVALID_D = '0')
@@ -341,10 +341,10 @@ begin
                     OP1_D <= VOUT_D;                    
                 end loop;
                 OP1_D <= X"0FFFFFFF";
-                OP2_D <= X"0000003F";
+                OP2_D <= X"0000043F";
                 SEL_D <= "1000";
                 wait for CLK_PERIOD / 66;
-                assert(SIG_INVALID_D = '0')
+                assert(SIG_INVALID_D = '1')
                 report("ERROR: SRA -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = to_stdlogicvector(to_bitvector(OP1_D) sra 31))
                 report("ERROR: SRA value incorect 2");
@@ -354,7 +354,7 @@ begin
                 OP2_D <= X"0000003F";
                 SEL_D <= "1000";
                 wait for CLK_PERIOD / 66;
-                assert(SIG_INVALID_D = '0')
+                assert(SIG_INVALID_D = '1')
                 report("ERROR: SRA -> Wrong SIGN_INVALID Value.");
                 assert(VOUT_D = X"FFFFFFFF")
                 report("ERROR: SRA value incorect 4");   

@@ -80,7 +80,11 @@ BEGIN
     SLTIU_RES <= '1' WHEN UNSIGNED(OP1) < UNSIGNED(OP2) ELSE '0';
     
     -- Invalid test
-    SIG_INVALID <= '1' WHEN UNSIGNED(SEL) > MAX_OP ELSE '0';
+    SIG_INVALID <= '1' WHEN UNSIGNED(SEL) > MAX_OP OR 
+                            (SEL = OP_SLL AND (OP2(31 downto 5) /= X"000000" & "000")) OR 
+                            (SEL = OP_SRL AND (OP2(31 downto 5) /= X"000000" & "000")) OR
+                            (SEL = OP_SRA AND (OP2(31 downto 5) /= X"0000" & "00000100000"))            
+                   ELSE '0';
  
     -- Operation selector
     WITH SEL SELECT VOUT <= 
