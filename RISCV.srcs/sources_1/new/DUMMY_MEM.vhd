@@ -46,7 +46,7 @@ entity DUMMY_MEM is
 end DUMMY_MEM;
 
 architecture DUMMY_MEM_BEHAVE of DUMMY_MEM is
-type ram_t is array (0 to 4096) of std_logic_vector(7 downto 0);
+type ram_t is array (0 to 8192) of std_logic_vector(7 downto 0);
 subtype word_t  is std_logic_vector(7 downto 0);
 
 IMPURE FUNCTION init_rom RETURN ram_t IS
@@ -55,7 +55,7 @@ IMPURE FUNCTION init_rom RETURN ram_t IS
 		VARIABLE l      : line;
 		VARIABLE readV  : integer;
 	BEGIN
-		FOR i IN 0 TO 4096 LOOP
+		FOR i IN 0 TO 8192 LOOP
 			IF(NOT ENDFILE(rom_file)) THEN
 				readline(rom_file, l);
 				hread(l, ret(i));

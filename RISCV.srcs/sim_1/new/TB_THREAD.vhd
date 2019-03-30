@@ -166,10 +166,12 @@ begin
          IF(counter = 0) then
             RST_D <= '1';
             STALL_D <= '0';
-         else 
-            RST_D <= '0';
+         else
+            RST_D <= '0';         
          end if;         
          counter <= counter + 1;
+         
+         
          
          -- Check current instruction (0x68 = error, 0x7C = success)
          assert(INST_MEM_ADDR_D /= X"00000068")
@@ -178,6 +180,13 @@ begin
          report "SUCCESS: Test succeeded" severity note;
          
      end if;
+     
+     if(counter > 2) then
+         assert(SIG_INVALID_D = '0')
+         report "ERROR: SIG Invalid" severity failure;
+         assert(SIG_ALIGN_D = '0')
+         report "ERROR: SIG Align" severity failure;
+      end if;         
 end process;
 
 end Behavioral;
