@@ -239,7 +239,7 @@ BEGIN
                 BRANCH_OP <= BU_OP_AUIPC;
                            
                 -- Select IMM as second operand
-                OPERAND_0 <= IMM_U;
+                OPERAND_OFF <= IMM_U;
         
             WHEN JAL_OPCODE =>                               -- JAL
                 -- Set OP Type as branch type 

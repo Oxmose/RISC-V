@@ -360,7 +360,7 @@ begin
           assert(RD_D = "10101")
           report "ERROR: AUIPCI -> Wrong RD Value.";
                     
-          assert(OPERAND_0_D = X"00101000")
+          assert(OPERAND_OFF_D = X"00101000")
           report "ERROR: AUIPC -> Wrong OP0 Value.";
           
           assert(OP_TYPE_D = "0010")
