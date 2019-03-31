@@ -128,7 +128,7 @@ begin
         -- JALR
         elsif(COUNTER < 4) then
             SEL_D <= "1010";
-            OFF_D <= X"00000011";
+            OP2_D <= X"00000011";
             wait for CLK_PERIOD;
             
             assert(SIG_INVAL_D = '0')
