@@ -35,6 +35,7 @@ use std.textio.all;
 --use UNISIM.VComponents.all;
 
 entity DUMMY_MEM is
+    generic(MEM_FILE : string := "inst.txt");
     Port ( CLK : in STD_LOGIC;
            RST : in STD_LOGIC;
            REQ : in STD_LOGIC;
@@ -50,7 +51,7 @@ type ram_t is array (0 to 8192) of std_logic_vector(7 downto 0);
 subtype word_t  is std_logic_vector(7 downto 0);
 
 IMPURE FUNCTION init_rom RETURN ram_t IS
-		FILE rom_file   : text OPEN read_mode IS "inst.txt";
+		FILE rom_file   : text OPEN read_mode IS MEM_FILE;
 		VARIABLE ret    : ram_t;
 		VARIABLE l      : line;
 		VARIABLE readV  : integer;

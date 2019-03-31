@@ -1,11 +1,10 @@
 ##
-## NO Bypass, Stall nor Stomp logic
+## NO Bypass, NO Stall, NO Stomp
 ##
 .text
 #############################################################
 # Check by hand, automatic tests NEED the following to work
 #############################################################
-
 # J
 j lui_test
 nop
@@ -1205,6 +1204,7 @@ nop
 #                                        BRANCH / JUMP
 ##########################################################################
 
+############### JAL
 jal x1, next_branch
 nop
 nop
@@ -1243,6 +1243,8 @@ nop
 nop
 nop
 nop
+
+############### JALR
 jalr x3, x2, 16
 nop
 nop
@@ -1265,14 +1267,485 @@ bne x1, x2, error
 nop
 nop
 
+j beq_test_n
+nop 
+nop 
+error_trampoline:
+j error 
+nop 
+nop 
+success_trampoline:
+j success 
+nop 
+nop
+
+############### BEQ 
+beq_test_n:
+addi x1, x0, 5
+nop
+nop 
+nop
+nop 
+beq x1, x0, error_trampoline 
+nop 
+nop
+beq x1, x1, test_bne_n
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+
+############### BNE 
+test_bne_n:
+bne x1, x1, error_trampoline 
+nop 
+nop 
+bne x0, x1, test_blt 
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+
+############### BLT 
+test_blt:
+addi x1, x0, 10 
+addi x2, x0, -10
+nop
+nop 
+nop 
+nop 
+
+blt x0, x2, error_trampoline 
+nop 
+nop 
+blt x1, x2, error_trampoline 
+nop 
+nop
+blt x0, x1, test_blt_n
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+test_blt_n:
+blt x2, x0, test_bltu
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+
+############### BLTU 
+test_bltu:
+addi x1, x0, 10 
+addi x2, x0, -10
+nop 
+nop 
+nop 
+nop 
+bltu x0, x2, test_bltu_n0 
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+test_bltu_n0:
+bltu x2, x1, error_trampoline 
+nop 
+nop
+bltu x2, x0, error_trampoline 
+nop 
+nop 
+bltu x0, x1, test_bge
+nop 
+nop
+j error_trampoline 
+nop 
+nop 
+
+############### BGE
+test_bge:
+addi x1, x0, 10 
+addi x2, x0, -10
+nop 
+nop 
+nop 
+nop
+bge x0, x2, test_bge_0 
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+test_bge_0:
+bge x1, x2, test_bge_1 
+nop 
+nop
+j error_trampoline 
+nop 
+nop
+test_bge_1:
+bge x0, x1, error_trampoline 
+nop 
+nop 
+bge x2, x0, error_trampoline
+nop 
+nop 
+bge x0, x0, test_bgeu
+nop 
+nop 
+j error_trampoline 
+nop 
+nop
+
+############### BGEU 
+test_bgeu:
+addi x1, x0, 10 
+addi x2, x0, -10
+nop 
+nop 
+nop 
+nop
+bgeu x0, x2, error_trampoline 
+nop 
+nop 
+bgeu x2, x1, test_bgeu_0 
+nop 
+nop
+j error_trampoline 
+nop 
+nop 
+test_bgeu_0:
+bgeu x2, x0, test_bgeu_1 
+nop 
+nop 
+j error_trampoline 
+nop 
+nop 
+test_bgeu_1:
+bgeu x0, x1, error_trampoline
+nop 
+nop
+bgeu x0, x0, next_bgeu
+nop 
+nop 
+j error_trampoline 
+nop 
+nop
+next_bgeu:
+nop 
+nop 
+
 ##########################################################################
 #                                        MEMORY
+# Memory must be at least 256 Bytes wide
+# Memory must contain 0xDEADBEEF at address 0x0
+# Memory must contain 0xCAFEBABE at address 0x4
 ##########################################################################
+lui x10 912092
+lui x11 1048572
+lui x13 12
+lui x15 831468
+lui x16 1048572
+lui x18 12
+
+addi x10 x10 -273
+addi x11 x11 -273
+addi x12 x0 -17
+addi x13 x13 -273
+addi x14 x0 239
+addi x15 x15 -1346
+addi x16 x16 -1346
+addi x17 x0 -66
+addi x18 x18 -1346
+addi x19 x0 190
+
+############### LOAD 
+lw x1, 0(x0) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x10, error_trampoline
+nop 
+nop 
+lh x1, 0(x0) 
+nop 
+nop 
+nop 
+nop
+bne x1, x11, error_trampoline
+nop 
+nop 
+lb x1, 0(x0) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x12, error_trampoline
+nop 
+nop 
+lhu x1, 0(x0) 
+nop 
+nop 
+nop 
+nop
+bne x1, x13, error_trampoline
+nop 
+nop 
+lbu x1, 0(x0) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x14, error_trampoline
+nop 
+nop 
+
+
+lw x1, 4(x0) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x15, error_trampoline
+nop 
+nop 
+lh x1, 4(x0) 
+nop 
+nop 
+nop 
+nop
+bne x1, x16, error_trampoline
+nop 
+nop 
+lb x1, 4(x0) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x17, error_trampoline
+nop 
+nop 
+lhu x1, 4(x0) 
+nop 
+nop 
+nop 
+nop
+bne x1, x18, error_trampoline
+nop 
+nop 
+lbu x1, 4(x0) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x19, error_trampoline
+nop 
+nop
+
+addi x2, x0, 4
+nop 
+nop 
+nop 
+nop 
+lw x1, -4(x2) 
+nop 
+nop 
+nop 
+nop 
+bne x1, x10, error_trampoline
+nop 
+nop 
+lh x1, -4(x2)  
+nop 
+nop 
+nop 
+nop
+bne x1, x11, error_trampoline
+nop 
+nop 
+lb x1, -4(x2)  
+nop 
+nop 
+nop 
+nop 
+bne x1, x12, error_trampoline
+nop 
+nop 
+lhu x1, -4(x2)  
+nop 
+nop 
+nop 
+nop
+bne x1, x13, error_trampoline
+nop 
+nop 
+lbu x1, -4(x2)  
+nop 
+nop 
+nop 
+nop 
+bne x1, x14, error_trampoline
+nop 
+nop
+
+
+############### STORE 
+#li x10, 0xDEADBEEF
+#li x11, 0xCAFEBABE
+#li x12, 0xDEADBEBE
+#li x13, 0xDEADBABE
+#li x14, 0xCAFEBAEF
+#li x15, 0xCAFEBEEF
+
+lui x10 912092
+lui x11 831468
+lui x12 912092
+lui x13 912092
+lui x14 831468
+lui x15 831468
+addi x10 x10 -273
+addi x11 x11 -1346
+addi x12 x12 -322
+addi x13 x13 -1346
+addi x14 x14 -1297
+addi x15 x15 -273
+
+sb x11, 0(x0)
+nop 
+nop 
+nop 
+nop 
+lw x2, 0(x0)
+nop 
+nop 
+nop 
+nop 
+bne x2, x12, error_trampoline
+nop 
+nop 
+sh x11, 0(x0)
+nop 
+nop 
+nop 
+nop 
+lw x2, 0(x0)
+nop 
+nop 
+nop 
+nop 
+bne x2, x13, error_trampoline
+nop 
+nop
+sw x11, 0(x0)
+nop 
+nop 
+nop 
+nop 
+lw x2, 0(x0)
+nop 
+nop 
+nop 
+nop 
+bne x2, x11, error_trampoline
+nop 
+nop
+
+
+sb x10, 4(x0)
+nop 
+nop 
+nop 
+nop 
+lw x2, 4(x0)
+nop 
+nop 
+nop 
+nop 
+bne x2, x14, error_trampoline
+nop 
+nop 
+sh x10, 4(x0)
+nop 
+nop 
+nop 
+nop 
+lw x2, 4(x0)
+nop 
+nop 
+nop 
+nop 
+bne x2, x15, error_trampoline
+nop 
+nop
+sw x10, 4(x0)
+nop 
+nop 
+nop 
+nop 
+lw x2, 4(x0)
+nop 
+nop 
+nop 
+nop 
+bne x2, x10, error_trampoline
+nop 
+nop
+
+addi x3, x0, 12
+nop
+nop 
+nop 
+nop
+sw x10, -4(x3)
+nop 
+nop 
+nop 
+nop 
+lw x2, -4(x3)
+nop 
+nop 
+nop 
+nop 
+bne x2, x10, error_trampoline
+nop 
+nop 
+sb x11, -4(x3)
+nop 
+nop 
+nop 
+nop 
+lw x2, -4(x3)
+nop 
+nop 
+nop 
+nop 
+bne x2, x12, error_trampoline
+nop 
+nop
+sh x11, -4(x3)
+nop 
+nop 
+nop 
+nop 
+lw x2, -4(x3)
+nop 
+nop 
+nop 
+nop 
+bne x2, x13, error_trampoline
+nop 
+nop
 
 ############### END
 nop
 nop
 
-j success
+j success_trampoline
 nop
 nop
+nop
+

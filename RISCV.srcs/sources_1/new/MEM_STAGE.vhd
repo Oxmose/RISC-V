@@ -123,7 +123,7 @@ BEGIN
                 WHEN LSU_TYPE_LW =>     
                     DATA_OPERAND_OUT <= MEM_LINK_VALUE_IN;
                 WHEN LSU_TYPE_LBU =>
-                    DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length  - 1downto 8 => '0') & 
+                    DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length - 1 DOWNTO 8 => '0') & 
                                         MEM_LINK_VALUE_IN(7 DOWNTO 0);
                 WHEN LSU_TYPE_LHU => 
                     DATA_OPERAND_OUT <= (DATA_OPERAND_OUT'length - 1 DOWNTO 16 => '0') & 
