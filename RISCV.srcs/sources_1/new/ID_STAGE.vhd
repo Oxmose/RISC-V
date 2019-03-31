@@ -73,6 +73,7 @@ CONSTANT JALR_OPCODE :   STD_LOGIC_VECTOR(6 DOWNTO 0) := "1100111";
 CONSTANT BRANCH_OPCODE : STD_LOGIC_VECTOR(6 DOWNTO 0) := "1100011";
 CONSTANT LOAD_OPCODE :   STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000011";
 CONSTANT STORE_OPCODE :  STD_LOGIC_VECTOR(6 DOWNTO 0) := "0100011";
+CONSTANT NOP_OPCODE :    STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000000";
 
 CONSTANT OP_TYPE_ALU :    STD_LOGIC_VECTOR(3 DOWNTO 0) := "0000";
 CONSTANT OP_TYPE_LUI :    STD_LOGIC_VECTOR(3 DOWNTO 0) := "0001";
@@ -349,7 +350,20 @@ BEGIN
                
                -- Select the LSU operation store
                LSU_OP <= '1' & FUNCT3;
+               
+            WHEN NOP_OPCODE =>                           -- IMPLEMENTATION SPECIFIC NO OP
+                -- Set OP Type as ALU type 
+                OP_TYPE <= OP_TYPE_ALU;
+            
+                -- Select RS1 value as first operand
+                REG_RID1  <= "00000";
+                OPERAND_0 <= (OTHERS => '0');
                 
+                -- Select IMM as second operand
+                OPERAND_1  <= (OTHERS => '0');
+                
+                -- Select the ALU operation
+                ALU_OP <= "0000";                
             WHEN OTHERS =>
                 SIG_INVALID <= '1';
         END CASE;
