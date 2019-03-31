@@ -145,7 +145,7 @@ begin
                    assert(RD_OUT_D = X"22222224")
                    report "ERROR: RDCHECK -> Wrong RD_OUT_D 2.";
                 elsif(STD_LOGIC_VECTOR(TO_UNSIGNED(i, OP_TYPE_D'length)) = OP_TYPE_STORE) then
-                   assert(RD_OUT_D = X"00000004")
+                   assert(RD_OUT_D = X"00000001")
                    report "ERROR: RDCHECK -> Wrong RD_OUT_D 3.";
                 else
                     assert(RD_OUT_D = X"00000000")

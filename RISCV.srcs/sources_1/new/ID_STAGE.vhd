@@ -180,6 +180,9 @@ BEGIN
                 REG_RID1  <= RS1;
                 OPERAND_0 <= REG_RVAL1;
                 
+                -- Set RS2 to 0
+                REG_RID2 <= "00000";
+                
                 -- Select IMM as second operand
                 OPERAND_1  <= IMM_I;
                 
@@ -240,6 +243,10 @@ BEGIN
                 
                 -- Select IMM as first operand
                 OPERAND_0 <= IMM_U;
+                
+                -- Set RS1 and RS2 to 0
+                REG_RID1 <= "00000";
+                REG_RID2 <= "00000";
             
             WHEN AUIPC_OPCODE =>                               -- AUIPC
                 -- Set OP Type as branch type 
@@ -276,6 +283,9 @@ BEGIN
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
                 OPERAND_0 <= REG_RVAL1;
+                
+                -- Set RS2 to 0
+                REG_RID2 <= "00000";
                 
                 -- Select IMM as second operand
                 OPERAND_1 <= IMM_I;
@@ -319,8 +329,11 @@ BEGIN
                 REG_RID1  <= RS1;
                 OPERAND_0 <= REG_RVAL1;
                 
+                -- Set RS2 to 0
+                REG_RID2 <= "00000";
+                
                 -- Set the IMM value as offset
-                OPERAND_1 <= IMM_I;
+                OPERAND_OFF <= IMM_I;
 
                 -- Select the LSU operation Load
                 LSU_OP <= '0' & FUNCT3;
@@ -338,12 +351,12 @@ BEGIN
                REG_RID1  <= RS1;
                OPERAND_0 <= REG_RVAL1;
                
-               -- Set the IMM value second operand
-               OPERAND_1 <= IMM_S;
-               
                -- Set RS2 value as value to store
                REG_RID2  <= RS2;
-               OPERAND_OFF <= REG_RVAL2;
+               OPERAND_1 <= REG_RVAL2;
+               
+               -- Set IMM value as offset
+               OPERAND_OFF <= IMM_S;
                
                -- Select the ALU operation ADD
                ALU_OP <= ALU_OP_ADD;                
@@ -352,6 +365,10 @@ BEGIN
                LSU_OP <= '1' & FUNCT3;
                
             WHEN NOP_OPCODE =>                           -- IMPLEMENTATION SPECIFIC NO OP
+                IF(INSTRUCTION_DATA /= X"00000000") THEN
+                   SIG_INVALID <= '1';
+                END IF;
+                
                 -- Set OP Type as ALU type 
                 OP_TYPE <= OP_TYPE_ALU;
             

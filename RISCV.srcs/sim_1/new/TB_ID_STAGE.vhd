@@ -85,6 +85,7 @@ constant JALR_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "1100111";
 constant BRANCH_OPCODE : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
 constant LOAD_OPCODE   : STD_LOGIC_VECTOR(6 downto 0) := "0000011";
 constant STORE_OPCODE  : STD_LOGIC_VECTOR(6 downto 0) := "0100011";
+CONSTANT NOP_OPCODE :    STD_LOGIC_VECTOR(6 DOWNTO 0) := "0000000";
 
 begin
     
@@ -135,7 +136,7 @@ begin
                 
                 wait for CLK_PERIOD / 256;
                 
-                if(OP_DATA(1 downto 0) /= "11") then
+                if(OP_DATA(1 downto 0) /= "11" AND OP_DATA /= NOP_OPCODE) then
                     assert(SIG_INVALID_D = '1')
                     report "ERROR: SIG_INVALID not detected.";
                     
@@ -145,7 +146,8 @@ begin
                       OP_DATA(6 downto 0) = AUIPC_OPCODE OR
                       OP_DATA(6 downto 0) = JAL_OPCODE OR
                       OP_DATA(6 downto 0) = JALR_OPCODE OR                      
-                      OP_DATA(6 downto 0) = BRANCH_OPCODE OR                      
+                      OP_DATA(6 downto 0) = BRANCH_OPCODE OR 
+                      OP_DATA(6 downto 0) = NOP_OPCODE OR                       
                       OP_DATA(6 downto 0) = LOAD_OPCODE OR                      
                       OP_DATA(6 downto 0) = STORE_OPCODE  ) then
                     assert(SIG_INVALID_D = '0')
@@ -838,7 +840,7 @@ begin
                     assert(OPERAND_0_D = X"0F0F0F0F")
                     report "ERROR: LOAD -> Wrong OP0 Value.";
                     
-                    assert(OPERAND_1_D = X"0000" & "0000000001001011")
+                    assert(OPERAND_OFF_D = X"0000" & "0000000001001011")
                     report "ERROR: LOAD -> Wrong OP_1 Value.";
                 
                 end if;
@@ -872,10 +874,10 @@ begin
                 assert(OPERAND_0_D = X"0F0F0F0F")
                 report "ERROR: STORE -> Wrong OP0 Value.";
                 
-                assert(OPERAND_1_D = X"000000"& "01011010")
+                assert(OPERAND_OFF_D = X"000000"& "01011010")
                 report "ERROR: STORE -> Wrong OP1 Value.";
                 
-                assert(OPERAND_OFF_D = X"00000011")
+                assert(OPERAND_1_D = X"00000011")
                 report "ERROR: STORE -> Wrong OP_OFF Value.";
             end loop;
         

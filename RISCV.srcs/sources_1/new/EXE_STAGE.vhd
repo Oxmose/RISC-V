@@ -81,6 +81,8 @@ SIGNAL RD_WRITE_BUFFER : STD_LOGIC;
 SIGNAL BU_OUTPUT :  STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL ALU_OUTPUT : STD_LOGIC_VECTOR(31 DOWNTO 0);
 
+SIGNAL OPERAND_1_BUFF : STD_LOGIC_VECTOR(31 DOWNTO 0);
+
 -- Components
 COMPONENT ALU_MODULE IS
     PORT ( OP1 :         IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -110,7 +112,7 @@ BEGIN
     -- Link the ALU
     ALU_MAP : ALU_MODULE PORT MAP(
         OP1         => OPERAND_0,
-        OP2         => OPERAND_1,
+        OP2         => OPERAND_1_BUFF,
         SEL         => ALU_OP,
         VOUT        => ALU_OUTPUT,
         SIG_INVALID => SIG_INVALID_ALU_BUFFER
@@ -129,6 +131,10 @@ BEGIN
         RD_WRITE    => RD_WRITE_BUFFER,
         SIG_INVALID => SIG_INVALID_BU_BUFFER
     );
+    
+    -- Operand 1 will change regarding store/load operation
+    OPERAND_1_BUFF <=  OPERAND_OFF WHEN (OP_TYPE = OP_TYPE_STORE OR OP_TYPE = OP_TYPE_LOAD) 
+                       ELSE OPERAND_1;
     
     -- Check that if branch is taken that indeed we have a branch op
     B_TAKEN <= B_TAKEN_BUFFER WHEN OP_TYPE = OP_TYPE_BRANCH
@@ -161,8 +167,8 @@ BEGIN
         ALU_OUTPUT WHEN OP_TYPE_ALU,
         -- On LUI, take immediate operand 0
         OPERAND_0 WHEN OP_TYPE_LUI,
-        -- On STORE, take offset value
-        OPERAND_OFF WHEN OP_TYPE_STORE,
+        -- On STORE, take operand 1 value
+        OPERAND_1 WHEN OP_TYPE_STORE,
         -- On Load, etc. the value of RD is decided later
         X"00000000" WHEN OTHERS;
         
