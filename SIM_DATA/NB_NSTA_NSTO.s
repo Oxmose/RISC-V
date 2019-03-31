@@ -1200,6 +1200,75 @@ nop
 bne x4, x11, error 
 nop 
 nop 
+
+##########################################################################
+#                                        BRANCH / JUMP
+##########################################################################
+
+jal x1, next_branch
+nop
+nop
+nop
+nop
+addi x1, x0, 0
+nop
+nop
+nop
+next_branch:
+lui x2, 1
+nop
+nop
+nop
+nop
+addi x2, x2, -104
+nop
+nop
+nop
+nop
+bne x1, x2, error
+nop
+nop
+addi x1, x0, 20
+lui x2, 1
+nop
+nop
+nop
+nop
+addi x2, x2, 0x3C
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+jalr x3, x2, 16
+nop
+nop
+nop
+nop
+jalr_test:
+addi x1, x0, 0
+nop
+nop
+nop
+nop
+nop
+nop
+addi x1, x1, 20
+addi x2, x0, 40
+nop
+nop
+nop
+bne x1, x2, error
+nop
+nop
+
+##########################################################################
+#                                        MEMORY
+##########################################################################
+
 ############### END
 nop
 nop
