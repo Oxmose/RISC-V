@@ -34,7 +34,17 @@ component EXE_STAGE is
            OPERAND_1 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            OPERAND_OFF :      IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            
+           RD_IN_EXE :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RD_IN_MEM :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RD_IN_WB :         IN STD_LOGIC_VECTOR(31 DOWNTO 0); 
+           
            PC_IN :            IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           
+           RS1_ID :           IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RS2_ID :           IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RD_ID_EXE :        IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RD_ID_MEM :        IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RD_ID_WB :         IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
            
            ALU_OP :           IN STD_LOGIC_VECTOR(3 DOWNTO 0);
            BRANCH_OP :        IN STD_LOGIC_VECTOR(3 DOWNTO 0); 
@@ -65,6 +75,16 @@ CONSTANT OP_TYPE_STORE :  STD_LOGIC_VECTOR(3 DOWNTO 0) := "0101";
 signal OPERAND_0_D :        STD_LOGIC_VECTOR(31 DOWNTO 0);    
 signal OPERAND_1_D :        STD_LOGIC_VECTOR(31 DOWNTO 0);
 signal OPERAND_OFF_D :      STD_LOGIC_VECTOR(31 DOWNTO 0);
+
+signal RD_IN_EXE_D :        STD_LOGIC_VECTOR(31 DOWNTO 0);     
+signal RD_IN_MEM_D :        STD_LOGIC_VECTOR(31 DOWNTO 0);    
+signal RD_IN_WB_D :        STD_LOGIC_VECTOR(31 DOWNTO 0);     
+
+signal RS1_ID_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
+signal RS2_ID_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
+signal RD_ID_EXE_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
+signal RD_ID_MEM_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
+signal RD_ID_WB_D : STD_LOGIC_VECTOR(4 DOWNTO 0);
            
 signal PC_IN_D :            STD_LOGIC_VECTOR(31 DOWNTO 0);
        
@@ -91,7 +111,17 @@ begin
        OPERAND_1 => OPERAND_1_D,
        OPERAND_OFF => OPERAND_OFF_D,
        
+       RD_IN_EXE => RD_IN_EXE_D,
+       RD_IN_MEM => RD_IN_MEM_D,
+       RD_IN_WB => RD_IN_WB_D, 
+
        PC_IN => PC_IN_D,
+       
+       RS1_ID => RS1_ID_D,
+       RS2_ID => RS2_ID_D,
+       RD_ID_EXE => RD_ID_EXE_D,
+       RD_ID_MEM => RD_ID_MEM_D,
+       RD_ID_WB => RD_ID_WB_D,
        
        ALU_OP => ALU_OP_D,
        BRANCH_OP => BRANCH_OP_D,
@@ -107,6 +137,12 @@ begin
        
        SIG_INVALID => SIG_INVALID_D
     );
+
+    RS1_ID_D <= "00000";
+    RS2_ID_D <= "00000";
+    RD_ID_EXE_D <= "00000";
+    RD_ID_MEM_D <= "00000";
+    RD_ID_WB_D <= "00000";
 
     process 
     begin

@@ -43,6 +43,16 @@ ENTITY ID_STAGE IS
            REG_RVAL1 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            REG_RVAL2 :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
            
+           RD_IN_EXE :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RD_IN_MEM :        IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RD_IN_WB :         IN STD_LOGIC_VECTOR(31 DOWNTO 0); 
+           RD_ID_EXE :        IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RD_ID_MEM :        IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RD_ID_WB :         IN STD_LOGIC_VECTOR(4 DOWNTO 0); 
+           RD_WR_EXE :        IN STD_LOGIC;
+           RD_WR_MEM :        IN STD_LOGIC;
+           RD_WR_WB :         IN STD_LOGIC;
+           
            OPERAND_0 :        OUT STD_LOGIC_VECTOR(31 DOWNTO 0);    
            OPERAND_1 :        OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
            OPERAND_OFF :      OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -54,8 +64,8 @@ ENTITY ID_STAGE IS
            LSU_OP :           OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
            OP_TYPE :          OUT STD_LOGIC_VECTOR(3 DOWNTO 0);           
            
-           REG_RID1 :         OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
-           REG_RID2 :         OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+           REG_RID1_OUT :     OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+           REG_RID2_OUT :     OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            
            SIG_INVALID :      out STD_LOGIC
     );          
@@ -104,10 +114,54 @@ SIGNAL IMM_B :  STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL IMM_U :  STD_LOGIC_VECTOR(31 DOWNTO 0);
 SIGNAL IMM_J :  STD_LOGIC_VECTOR(31 DOWNTO 0);
 
+SIGNAL REG_RID1 : STD_LOGIC_VECTOR(4 DOWNTO 0);
+SIGNAL REG_RID2 : STD_LOGIC_VECTOR(4 DOWNTO 0);
+
+SIGNAL OP0_BYPASS : STD_LOGIC_VECTOR(31 DOWNTO 0);
+SIGNAL OP1_BYPASS : STD_LOGIC_VECTOR(31 DOWNTO 0);
+
 -- Components 
--- NONE;
+COMPONENT BYPASS_UNIT IS
+    PORT ( RVAL1 :    IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RVAL2 :    IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           EXRDVAL :  IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           MEMRDVAL : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           WBRDVAL :  IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+           RID1 :     IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+           RID2 :     IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+           EXRDID :   IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+           MEMRDID :  IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+           WBRDID :   IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+           EXRDWR :   IN STD_LOGIC;
+           MEMRDWR :  IN STD_LOGIC;
+           WBRDWR :   IN STD_LOGIC;
+           RVAL1OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);       
+           RVAL2OUT : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)     
+    );
+END COMPONENT BYPASS_UNIT;
 
 BEGIN    
+
+    -- Maop the bypass unit
+    BP_U_MAP : BYPASS_UNIT PORT MAP(
+        RVAL1    => OP0_BYPASS,
+        RVAL2    => OP1_BYPASS,
+        EXRDVAL  => RD_IN_EXE,
+        MEMRDVAL => RD_IN_MEM,
+        WBRDVAL  => RD_IN_WB,
+        RID1     => REG_RID1,
+        RID2     => REG_RID2,
+        EXRDID   => RD_ID_EXE,
+        MEMRDID  => RD_ID_MEM,
+        WBRDID   => RD_ID_WB,
+        EXRDWR   => RD_WR_EXE,
+        MEMRDWR  => RD_WR_MEM,
+        WBRDWR   => RD_WR_WB,
+        RVAL1OUT => OPERAND_0,
+        RVAL2OUT => OPERAND_1    
+    );
+    REG_RID1_OUT <= REG_RID1;
+    REG_RID2_OUT <= REG_RID2;
      
      -- As defined by RISC-V RV64I, opcode is defined by the 7 first bits
      OPCODE <= INSTRUCTION_DATA(6 DOWNTO 0);
@@ -161,8 +215,6 @@ BEGIN
                             IMM_I, IMM_S, IMM_B, IMM_U, IMM_J)
     BEGIN 
         SIG_INVALID <= '0';
-        OPERAND_0   <= (OTHERS => '0');
-        OPERAND_1   <= (OTHERS => '0');
         OPERAND_OFF <= (OTHERS => '0');
         ALU_OP      <= (OTHERS => '0');
         BRANCH_OP   <= (OTHERS => '0');
@@ -178,13 +230,13 @@ BEGIN
             
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
-                OPERAND_0 <= REG_RVAL1;
+                OP0_BYPASS <= REG_RVAL1;
                 
                 -- Set RS2 to 0
                 REG_RID2 <= "00000";
                 
                 -- Select IMM as second operand
-                OPERAND_1  <= IMM_I;
+                OP1_BYPASS  <= IMM_I;
                 
                 -- Select the ALU operation
                 ALU_OP <= '0' & FUNCT3;
@@ -218,11 +270,11 @@ BEGIN
             
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
-                OPERAND_0 <= REG_RVAL1;
+                OP0_BYPASS <= REG_RVAL1;
                 
                 -- Select RS2 value as second operand
                 REG_RID2  <= RS2;
-                OPERAND_1 <= REG_RVAL2;
+                OP1_BYPASS <= REG_RVAL2;
                 
                 -- Select the ALU operation
                 ALU_OP <= '0' & FUNCT3;
@@ -242,7 +294,7 @@ BEGIN
                 OP_TYPE <= OP_TYPE_LUI;
                 
                 -- Select IMM as first operand
-                OPERAND_0 <= IMM_U;
+                OP0_BYPASS <= IMM_U;
                 
                 -- Set RS1 and RS2 to 0
                 REG_RID1 <= "00000";
@@ -282,13 +334,13 @@ BEGIN
                 
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
-                OPERAND_0 <= REG_RVAL1;
+                OP0_BYPASS <= REG_RVAL1;
                 
                 -- Set RS2 to 0
                 REG_RID2 <= "00000";
                 
                 -- Select IMM as second operand
-                OPERAND_1 <= IMM_I;
+                OP1_BYPASS <= IMM_I;
         
             WHEN BRANCH_OPCODE =>                               -- BRANCH
                 -- Check FUNCT3
@@ -304,11 +356,11 @@ BEGIN
                 
                 -- Select RS1 value as first operand
                 REG_RID1  <= RS1;
-                OPERAND_0 <= REG_RVAL1;
+                OP0_BYPASS <= REG_RVAL1;
                 
                 -- Select RS2 value as second operand
                 REG_RID2  <= RS2;
-                OPERAND_1 <= REG_RVAL2;
+                OP1_BYPASS <= REG_RVAL2;
                 
                 -- Add the offset 
                 OPERAND_OFF <= IMM_B;
@@ -327,7 +379,7 @@ BEGIN
                 
                 -- Set RS1 value as first operand
                 REG_RID1  <= RS1;
-                OPERAND_0 <= REG_RVAL1;
+                OP0_BYPASS <= REG_RVAL1;
                 
                 -- Set RS2 to 0
                 REG_RID2 <= "00000";
@@ -349,11 +401,11 @@ BEGIN
                
                -- Set RS1 value as first operand
                REG_RID1  <= RS1;
-               OPERAND_0 <= REG_RVAL1;
+               OP0_BYPASS <= REG_RVAL1;
                
                -- Set RS2 value as value to store
                REG_RID2  <= RS2;
-               OPERAND_1 <= REG_RVAL2;
+               OP1_BYPASS <= REG_RVAL2;
                
                -- Set IMM value as offset
                OPERAND_OFF <= IMM_S;
@@ -374,10 +426,10 @@ BEGIN
             
                 -- Select RS1 value as first operand
                 REG_RID1  <= "00000";
-                OPERAND_0 <= (OTHERS => '0');
-                
-                -- Select IMM as second operand
-                OPERAND_1  <= (OTHERS => '0');
+                REG_RID2  <= "00000";
+                OP0_BYPASS <= REG_RVAL1;
+                OP1_BYPASS <= REG_RVAL2;
+                OPERAND_OFF  <= (OTHERS => '0');
                 
                 -- Select the ALU operation
                 ALU_OP <= "0000";                

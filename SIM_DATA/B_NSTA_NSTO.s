@@ -1,5 +1,5 @@
 ##
-## NO Bypass, NO Stall, NO Stomp
+## Bypass, NO Stall, NO Stomp
 ##
 .text
 #############################################################
@@ -68,14 +68,9 @@ auto_tests:
 addi x1, x0, 5
 addi x2, x0, 10
 addi x3, x0, 20
-nop
 addi x1, x1, 10
 addi x2, x2, 10
 addi x3, x3, -5
-nop
-nop
-nop
-nop
 
 bne x1, x3, error
 nop
@@ -90,71 +85,37 @@ beq x2, x3, error
 nop
 nop
 
-############### REG RESET
-add x1, x0, x0 
-add x3, x0, x0
-add x2, x0, x0
-nop
-nop
-nop
-nop
-nop 
-
 ############### SLTI
 addi x1, x0, 1
 addi x2, x0, 25
 addi x3, x0, -25
-nop
-nop
-nop
-nop
 
 # <
 slti x5, x2, 50
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # =
 slti x5, x2, 25
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slti x5, x2, 10
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slti x5, x2, -10
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slti x5, x2, -25
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
@@ -163,50 +124,30 @@ nop
 
 # <
 slti x5, x3, 50
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # <
 slti x5, x3, 25
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # <
 slti x5, x3, -10
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop
 
 # =
 slti x5, x3, -25
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slti x5, x3, -100
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
@@ -215,57 +156,33 @@ nop
 addi x1, x0, 1
 addi x2, x0, 25
 addi x3, x0, -25
-nop
-nop
-nop
-nop
 
 # <
 sltiu x5, x2, 50
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # =
 sltiu x5, x2, 25
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 sltiu x5, x2, 10
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 sltiu x5, x2, -10
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # >
 sltiu x5, x2, -25
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
@@ -274,47 +191,30 @@ nop
 
 # <
 sltiu x5, x3, 50
-nop
-nop
-nop 
 bne x5, x0, error 
 nop 
 nop 
 
 # <
 sltiu x5, x3, 25
-nop
-nop
-nop 
 bne x5, x0, error 
 nop 
 nop 
 
 # <
 sltiu x5, x3, -10
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop
 
 # =
 sltiu x5, x3, -25
-nop
-nop
-nop 
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 sltiu x5, x3, -100
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
@@ -322,8 +222,6 @@ nop
 ############### ANDI
 addi x1, x0, 0xFFFFFFFF
 addi x2, x0, 0x000002A2
-nop 
-nop 
 andi x3, x1, 0x000003D1
 andi x4, x2, 0x00000122
 andi x5, x1, 0x00000000
@@ -357,9 +255,7 @@ nop
 
 ############### ORI 
 addi x1, x0, 0xFFFFFFFF
-addi x2, x0, 0x000002A2
-nop 
-nop 
+addi x2, x0, 0x000002A2 
 ori x3, x1, 0x000003D1
 ori x4, x2, 0x00000421
 ori x5, x1, 0x00000000
@@ -393,9 +289,7 @@ nop
 
 ############### XORI
 addi x1, x0, 0x00000456
-addi x2, x0, 0x00000762
-nop 
-nop 
+addi x2, x0, 0x00000762 
 xori x3, x1, 0x000006a1
 xori x4, x2, 0x00000421
 xori x5, x1, 0x000003ed
@@ -435,7 +329,6 @@ lui x5, 0xFF000
 lui x6, 0xe 
 lui x7, 0x10
 lui x8, 0x00080000
-nop
 addi x6, x6, 0x140
 
 bne x1, x5, error 
@@ -514,25 +407,13 @@ nop
 
 auipc x1, 0xA0A0A
 lui x2, 0xA0A0A
-nop
-nop
-nop
-nop
-addi x2, x2, 0x638
-nop
-nop
-nop
-nop
+addi x2, x2, 0x494
 bne x1, x2, error
 nop
 nop
 
 auipc x1, 0
-addi x2, x0, 0x670
-nop
-nop
-nop
-nop
+addi x2, x0, 0x4AC
 bne x1, x2, error
 nop
 nop
@@ -545,17 +426,9 @@ addi x1, x0, 5
 addi x2, x0, 10
 addi x3, x0, 20
 addi x4, x0, -5
-nop
-nop
-nop
-nop
 add x1, x1, x2
 add x2, x2, x2
 add x3, x3, x4
-nop
-nop
-nop
-nop
 
 bne x1, x3, error
 nop
@@ -582,7 +455,6 @@ addi x7, x0, 25
 sub x1, x2, x1 # 5
 sub x2, x2, x3 # -10
 sub x3, x3, x4 # 25
-nop
 
 bne x1, x5, error
 nop
@@ -598,11 +470,6 @@ nop
 add x1, x0, x0 
 add x3, x0, x0
 add x2, x0, x0
-nop
-nop
-nop
-nop
-nop 
 
 ############### SLT
 addi x6, x0, 50
@@ -614,55 +481,33 @@ addi x10, x0, -25
 addi x1, x0, 1
 addi x2, x0, 25
 addi x3, x0, -25
-nop 
-nop 
-nop 
+
 # <
 slt x5, x2, x6
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # =
 slt x5, x2, x7
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slt x5, x2, x8
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slt x5, x2, x9
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slt x5, x2, x10
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
@@ -672,47 +517,30 @@ addi x11, x0, -100
 
 # <
 slt x5, x3, x6
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # <
 slt x5, x3, x7
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # <
 slt x5, x3, x9
-nop
-nop
-nop
 bne x5, x1, error 
 nop 
 nop
 
 # =
 slt x5, x3, x10
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 slt x5, x3, x11
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
@@ -721,56 +549,33 @@ nop
 addi x1, x0, 1
 addi x2, x0, 25
 addi x3, x0, -25
-nop 
-nop 
-nop 
 
 # <
 sltu x5, x2, x6
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # =
 sltu x5, x2, x7
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 sltu x5, x2, x8
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 sltu x5, x2, x9
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
 
 # >
 sltu x5, x2, x10
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop 
@@ -779,50 +584,30 @@ nop
 
 # <
 sltu x5, x3, x6
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # <
 sltu x5, x3, x7
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # <
 sltu x5, x3, x9
-nop
-nop
-nop 
-nop
 bne x5, x1, error 
 nop 
 nop
 
 # =
 sltu x5, x3, x10
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
 
 # >
 sltu x5, x3, x11
-nop
-nop
-nop 
-nop
 bne x5, x0, error 
 nop 
 nop 
@@ -1125,7 +910,6 @@ lui x9, 0xFF000
 lui x10, 0xe 
 lui x11, 0x10
 lui x12, 0x00080000
-nop
 addi x10, x10, 0x140
 
 bne x1, x9, error 
@@ -1213,37 +997,19 @@ nop
 ############### JAL
 jal x1, next_branch
 nop
-nop
-nop
-nop
+nop 
+
 addi x1, x0, 0
-nop
-nop
-nop
+
 next_branch:
-lui x2 1
-nop
-nop
-nop
-nop
-addi x2 x2 -72
-nop
-nop
-nop
-nop
+lui x2, 1
+addi x2, x2 -932
 bne x1, x2, error
 nop
 nop
 addi x1, x0, 20
 lui x2, 1
-nop
-nop
-nop
-nop
-addi x2, x2, 0x74
-nop
-nop
-nop
+addi x2, x2, -820
 j jalr_test_start
 nop 
 nop 
@@ -1275,9 +1041,6 @@ nop
 nop
 addi x1, x1, 20
 addi x2, x0, 40
-nop
-nop
-nop
 bne x1, x2, error_trampoline
 nop
 nop
@@ -1288,11 +1051,7 @@ nop
 
 ############### BEQ 
 beq_test_n:
-addi x1, x0, 5
-nop
-nop 
-nop
-nop 
+addi x1, x0, 5 
 beq x1, x0, error_trampoline 
 nop 
 nop
@@ -1319,10 +1078,6 @@ nop
 test_blt:
 addi x1, x0, 10 
 addi x2, x0, -10
-nop
-nop 
-nop 
-nop 
 
 blt x0, x2, error_trampoline 
 nop 
@@ -1348,10 +1103,6 @@ nop
 test_bltu:
 addi x1, x0, 10 
 addi x2, x0, -10
-nop 
-nop 
-nop 
-nop 
 bltu x0, x2, test_bltu_n0 
 nop 
 nop 
@@ -1376,10 +1127,6 @@ nop
 test_bge:
 addi x1, x0, 10 
 addi x2, x0, -10
-nop 
-nop 
-nop 
-nop
 bge x0, x2, test_bge_0 
 nop 
 nop 
@@ -1411,10 +1158,6 @@ nop
 test_bgeu:
 addi x1, x0, 10 
 addi x2, x0, -10
-nop 
-nop 
-nop 
-nop
 bgeu x0, x2, error_trampoline 
 nop 
 nop 
@@ -1553,11 +1296,7 @@ bne x1, x19, error_trampoline
 nop 
 nop
 
-addi x2, x0, 4
-nop 
-nop 
-nop 
-nop 
+addi x2, x0, 4 
 lw x1, -4(x2) 
 nop 
 nop 
@@ -1703,10 +1442,6 @@ nop
 nop
 
 addi x3, x0, 12
-nop
-nop 
-nop 
-nop
 sw x10, -4(x3)
 nop 
 nop 
@@ -1752,8 +1487,6 @@ nop
 nop
 
 j success_trampoline
-nop
-nop
 nop
 nop
 
