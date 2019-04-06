@@ -7,8 +7,8 @@ Implementation: RISC-V32I
 ## Current state:
 * CPU        : Done
 * CPU Bypass : Done 
-* CPU Stall  : TODO 
-* CPU Stomp  : TODO
+* CPU Stall  : In progress 
+* CPU Stomp  : Done
 * Caches     : TODO
 
 In progress : Testing the CPU

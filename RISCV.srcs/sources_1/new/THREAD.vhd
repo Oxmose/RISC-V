@@ -151,6 +151,9 @@ SIGNAL REG_FILE_RID2 :  STD_LOGIC_VECTOR(4 DOWNTO 0);
 SIGNAL REG_FILE_WRID :  STD_LOGIC_VECTOR(4 DOWNTO 0);
 SIGNAL REG_FILE_WRITE : STD_LOGIC;
 
+-- Stomp logic
+SIGNAL STOMP_RST : STD_LOGIC;
+
 -- Components
 
 COMPONENT REGISTER_32B IS
@@ -318,13 +321,16 @@ REGISTER_WRITES <= NOT STALL;
 -- Internal SIG_INVALID
 SIG_INVALID <= SIG_INVALID_EXE OR SIG_INVALID_ID OR SIG_INVALID_MEM;
 
+-- Stomp logic 
+STOMP_RST <= RST OR IF_PC_WRITE;
+
 ------------------------------------------------------------------
 -- IF STAGE
 ------------------------------------------------------------------
 -- Map IF-ID registers
 IF_ID_PC : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => IF_ID_PC_WRITE, 
     D   => IF_ID_PC_IN, 
     Q   => IF_ID_PC_OUT
@@ -332,7 +338,7 @@ IF_ID_PC : REGISTER_32B PORT MAP(
                                  
 IF_ID_INSTRUCTION : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => IF_ID_INST_WRITE, 
     D   => IF_ID_INST_IN, 
     Q   => IF_ID_INST_OUT
@@ -366,77 +372,77 @@ IF_STAGE_MAP : IF_STAGE PORT MAP(
 -- Map ID-EXE registers
 ID_EX_OPERAND_0 : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_OPERAND_0_WRITE, 
     D   => ID_EX_OPERAND_0_IN, 
     Q   => ID_EX_OPERAND_0_OUT
 );
 ID_EX_OPERAND_1 : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_OPERAND_1_WRITE, 
     D   => ID_EX_OPERAND_1_IN, 
     Q   => ID_EX_OPERAND_1_OUT
 );
 ID_EX_OPERAND_OFF : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_OPERAND_OFF_WRITE, 
     D   => ID_EX_OPERAND_OFF_IN, 
     Q   => ID_EX_OPERAND_OFF_OUT
 );
 ID_EX_RD_ID : REGISTER_5B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_RD_ID_WRITE, 
     D   => ID_EX_RD_ID_IN, 
     Q   => ID_EX_RD_ID_OUT
 );
 ID_EX_ALU_OP : REGISTER_4B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_ALU_OP_WRITE, 
     D   => ID_EX_ALU_OP_IN, 
     Q   => ID_EX_ALU_OP_OUT
 );
 ID_EX_BRANCH_OP : REGISTER_4B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_BRANCH_OP_WRITE, 
     D   => ID_EX_BRANCH_OP_IN, 
     Q   => ID_EX_BRANCH_OP_OUT
 );
 ID_EX_LSU_OP : REGISTER_4B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_LSU_OP_WRITE, 
     D   => ID_EX_LSU_OP_IN, 
     Q   => ID_EX_LSU_OP_OUT
 );
 ID_EX_OP_TYPE : REGISTER_4B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_OP_TYPE_WRITE, 
     D   => ID_EX_OP_TYPE_IN, 
     Q   => ID_EX_OP_TYPE_OUT
 );
 ID_EX_PC : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_PC_WRITE, 
     D   => IF_ID_PC_OUT, 
     Q   => ID_EX_PC_OUT
 );
 ID_EX_RS1 : REGISTER_5B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_RS1_ID_WRITE, 
     D   => REG_FILE_RID1, 
     Q   => ID_EX_RS1_ID_OUT
 );
 ID_EX_RS2 : REGISTER_5B PORT MAP(
     CLK => CLK, 
-    RST => RST, 
+    RST => STOMP_RST, 
     WR  => ID_EX_RS2_ID_WRITE, 
     D   => REG_FILE_RID2, 
     Q   => ID_EX_RS2_ID_OUT
