@@ -40,12 +40,14 @@ BEGIN
 
     REG_PROC: PROCESS(RST, CLK, WR)
     BEGIN
-        -- On RST, set Q to 0
-        IF(RST = '1') THEN
-            Q <= (OTHERS => '0');
-        -- On rising eadge, if EN is set to 1, write new output
-        ELSIF(RISING_EDGE(CLK) AND WR = '1') THEN
-            Q <= D;
+        IF(RISING_EDGE(CLK)) THEN
+            -- On RST, set Q to 0
+            IF(RST = '1') THEN
+                Q <= (OTHERS => '0');
+            -- On rising eadge, if EN is set to 1, write new output
+            ELSIF(WR = '1') THEN
+                Q <= D;
+            END IF;
         END IF;
     END PROCESS REG_PROC;
 
