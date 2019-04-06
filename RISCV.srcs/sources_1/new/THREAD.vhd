@@ -154,6 +154,11 @@ SIGNAL REG_FILE_WRITE : STD_LOGIC;
 -- Stomp logic
 SIGNAL STOMP_RST : STD_LOGIC;
 
+-- Stall logic 
+SIGNAL IF_STALL_SIG : STD_LOGIC;
+SIGNAL ID_STALL_RST : STD_LOGIC;
+SIGNAL LD_STALL_SIG : STD_LOGIC;
+
 -- Components
 
 COMPONENT REGISTER_32B IS
@@ -242,7 +247,8 @@ COMPONENT ID_STAGE IS
            REG_RID1_OUT :     OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            REG_RID2_OUT :     OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            
-           SIG_INVALID :      out STD_LOGIC
+           SIG_INVALID :      OUT STD_LOGIC;
+           LD_STALL :         OUT STD_LOGIC
     );      
 END COMPONENT ID_STAGE;
 
@@ -324,13 +330,17 @@ SIG_INVALID <= SIG_INVALID_EXE OR SIG_INVALID_ID OR SIG_INVALID_MEM;
 -- Stomp logic 
 STOMP_RST <= RST OR IF_PC_WRITE;
 
+-- Stall logic 
+IF_STALL_SIG <= STALL OR LD_STALL_SIG;
+ID_STALL_RST <= STOMP_RST OR LD_STALL_SIG;
+
 ------------------------------------------------------------------
 -- IF STAGE
 ------------------------------------------------------------------
 -- Map IF-ID registers
 IF_ID_PC : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => STOMP_RST, 
+    RST => ID_STALL_RST, 
     WR  => IF_ID_PC_WRITE, 
     D   => IF_ID_PC_IN, 
     Q   => IF_ID_PC_OUT
@@ -338,7 +348,7 @@ IF_ID_PC : REGISTER_32B PORT MAP(
                                  
 IF_ID_INSTRUCTION : REGISTER_32B PORT MAP(
     CLK => CLK, 
-    RST => STOMP_RST, 
+    RST => ID_STALL_RST, 
     WR  => IF_ID_INST_WRITE, 
     D   => IF_ID_INST_IN, 
     Q   => IF_ID_INST_OUT
@@ -352,7 +362,7 @@ IF_ID_INST_WRITE <= REGISTER_WRITES;
 IF_STAGE_MAP : IF_STAGE PORT MAP(
     CLK                => CLK, 
     RST                => RST,
-    STALL              => STALL, 
+    STALL              => IF_STALL_SIG, 
     EF_JUMP            => IF_PC_WRITE,
     JUMP_INST_ADDR     => IF_PC_WRITE_VALUE,
     INST_MEM_DATA      => INST_MEM_IN,
@@ -485,7 +495,8 @@ ID_STAGE_MAP : ID_STAGE PORT MAP(
     OP_TYPE          => ID_EX_OP_TYPE_IN,
     REG_RID1_OUT     => REG_FILE_RID1,
     REG_RID2_OUT     => REG_FILE_RID2,
-    SIG_INVALID      => SIG_INVALID_ID
+    SIG_INVALID      => SIG_INVALID_ID,
+    LD_STALL         => LD_STALL_SIG
 );
 
 ------------------------------------------------------------------

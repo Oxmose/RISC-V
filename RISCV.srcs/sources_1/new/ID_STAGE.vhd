@@ -24,6 +24,7 @@
 --              OUT: 5 bits, REG_RID1 the register id for RS1. 
 --              OUT: 5 bits, REG_RID2 the register id for RS2. 
 --              OUT: 1 bit, SIG_INVALID the instruction invalid exception signal.
+--              OUT: 1 bit, LD_STALL the stall signal for load operations.
 --
 -- Dependencies: None.
 -- 
@@ -67,7 +68,8 @@ ENTITY ID_STAGE IS
            REG_RID1_OUT :     OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            REG_RID2_OUT :     OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
            
-           SIG_INVALID :      out STD_LOGIC
+           SIG_INVALID :      OUT STD_LOGIC;
+           LD_STALL :         OUT STD_LOGIC
     );          
 END ID_STAGE;
 
@@ -222,6 +224,7 @@ BEGIN
         OP_TYPE     <= (OTHERS => '0');
         REG_RID1    <= (OTHERS => '0');
         REG_RID2    <= (OTHERS => '0');
+        LD_STALL    <= '0';
         
         CASE OPCODE IS
             WHEN OP_IMM_OPCODE =>                                -- OP-IMM      
@@ -389,6 +392,9 @@ BEGIN
 
                 -- Select the LSU operation Load
                 LSU_OP <= '0' & FUNCT3;
+                
+                -- Load stall bubble 
+                LD_STALL <= '1';
                 
              WHEN STORE_OPCODE =>                              -- STORE
                -- Check FUNCT3

@@ -7,11 +7,10 @@ Implementation: RISC-V32I
 ## Current state:
 * CPU        : Done
 * CPU Bypass : Done 
-* CPU Stall  : In progress 
+* CPU Stall  : Done
 * CPU Stomp  : Done
+* CPU CSRs   : In progress
 * Caches     : TODO
-
-In progress : Testing the CPU
 
 ## Schema
 ![Basic DLX schema](https://raw.githubusercontent.com/Oxmose/RISC-V/master/RISCV.png)
