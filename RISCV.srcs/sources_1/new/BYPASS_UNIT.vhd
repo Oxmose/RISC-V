@@ -56,7 +56,8 @@ ARCHITECTURE BYPASS_UNIT_BEHAVE OF BYPASS_UNIT IS
 BEGIN
 
     RS1_BYPASS : PROCESS(RVAL1, EXRDVAL, MEMRDVAL, WBRDVAL, 
-                         RID1, EXRDID, MEMRDID, WBRDID)
+                         RID1, EXRDID, MEMRDID, WBRDID,
+                         EXRDWR, MEMRDWR, WBRDWR)
     BEGIN   
         IF(RID1 /= "00000" AND EXRDWR = '1' AND RID1 = EXRDID) THEN -- Priority is gave to EXE
             RVAL1OUT <= EXRDVAL;
@@ -70,7 +71,8 @@ BEGIN
     END PROCESS RS1_BYPASS;
 
     RS2_BYPASS : PROCESS(RVAL2, EXRDVAL, MEMRDVAL, WBRDVAL, 
-                         RID2, EXRDID, MEMRDID, WBRDID)
+                         RID2, EXRDID, MEMRDID, WBRDID,
+                         EXRDWR, MEMRDWR, WBRDWR)
     BEGIN 
         IF(RID2 /= "00000" AND EXRDWR = '1' AND RID2 = EXRDID) THEN -- Priority is gave to EXE
             RVAL2OUT <= EXRDVAL;

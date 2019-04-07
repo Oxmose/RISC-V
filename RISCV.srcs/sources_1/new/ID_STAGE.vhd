@@ -223,7 +223,9 @@ BEGIN
         LSU_OP      <= (OTHERS => '0');
         OP_TYPE     <= (OTHERS => '0');
         REG_RID1    <= (OTHERS => '0');
-        REG_RID2    <= (OTHERS => '0');
+        REG_RID2    <= (OTHERS => '0');        
+        OP0_BYPASS  <= (OTHERS => '0');
+        OP1_BYPASS  <= (OTHERS => '0');
         LD_STALL    <= '0';
         
         CASE OPCODE IS
